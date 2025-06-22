@@ -317,7 +317,7 @@ export default function FishPage() {
             </motion.div>
 
             <p className="text-center text-xs text-neutral-500 italic mt-10 max-w-md mx-auto">
-              *Unknown/Other means the fish isn&apos;t in the known list yet.
+              *Unknown/Other means the fish isn&apos;t in the known list yet. Contact the site owner to add it.
             </p>
           </>
         )}
