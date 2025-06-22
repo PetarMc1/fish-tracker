@@ -26,7 +26,6 @@ async function handleCreateUser(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // 1. Generate ID from random.org
     const randomRes = await axios.post('https://api.random.org/json-rpc/4/invoke', {
       jsonrpc: '2.0',
       method: 'generateStrings',
@@ -46,11 +45,9 @@ async function handleCreateUser(req, res) {
       return res.status(500).json({ error: 'Failed to generate ID' });
     }
 
-    // 2. Generate Fernet key (32 random bytes base64 encoded)
     const fernetKey = crypto.randomBytes(32).toString('base64');
     console.log('Generated Fernet key:', fernetKey);
 
-    // 3. Insert into MongoDB
     const client = new MongoClient(MONGO_URI);
     await client.connect();
     console.log('MongoDB connected');
@@ -68,7 +65,6 @@ async function handleCreateUser(req, res) {
 
     await client.close();
 
-    // 4. Return result
     return res.status(201).json({ name, id, fernetKey });
   } catch (error) {
     console.error('Error in handleCreateUser:', error);

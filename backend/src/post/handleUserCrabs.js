@@ -50,7 +50,6 @@ async function handleUserCrabs(req, res) {
     try {
       await client.connect();
 
-      // Step 1: Get user info
       const coreDb = client.db("core_users_data");
       const usersCol = coreDb.collection("users");
       const user = await usersCol.findOne({ id: userId });
@@ -61,7 +60,6 @@ async function handleUserCrabs(req, res) {
         return;
       }
 
-      // Step 2: Decrypt the data using user's Fernet key
       const secret = new Fernet.Secret(user.fernetKey);
       const token = new Fernet.Token({ secret, token: encryptedString });
 
@@ -85,7 +83,6 @@ async function handleUserCrabs(req, res) {
         return;
       }
 
-      // Step 3: Validate the crab data structure
       const isValidCrab =
         typeof data === "object" &&
         data !== null &&
@@ -102,7 +99,6 @@ async function handleUserCrabs(req, res) {
         return;
       }
 
-      // Step 4: Insert into user's crab collection
       const crabDb = client.db("user_data_crab");
       const crabCollection = crabDb.collection(user.name);
 

@@ -1,8 +1,7 @@
-require("dotenv").config(); // Make sure environment variables are loaded first
+require("dotenv").config();
 const { MongoClient } = require("mongodb");
 const Fernet = require("fernet");
 
-// Validate the URI immediately
 const uri = process.env.MONGO_URI;
 if (!uri) {
   throw new Error("MONGO_URI is not set in your environment variables.");
@@ -48,7 +47,6 @@ async function handleFish(req, res) {
     try {
       await client.connect();
 
-      // 1. Lookup user info
       const coreDb = client.db("core_users_data");
       const usersCollection = coreDb.collection("users");
 
@@ -70,12 +68,11 @@ async function handleFish(req, res) {
         return;
       }
 
-      // 2. Decrypt incoming data using user's fernetKey
       const secret = new Fernet.Secret(user.fernetKey);
       const token = new Fernet.Token({
         secret,
         token: encryptedString,
-        ttl: 0, // Optional: Set TTL if needed
+        ttl: 0,
       });
 
       let decryptedStr;
@@ -90,7 +87,6 @@ async function handleFish(req, res) {
         return;
       }
 
-      // 3. Validate and insert data
       let data;
       try {
         data = JSON.parse(decryptedStr);
@@ -111,8 +107,7 @@ async function handleFish(req, res) {
         );
         return;
       }
-
-      // 4. Insert into the user's specific collection
+      
       const userDataDb = client.db("user_data_fish");
       const fishCollection = userDataDb.collection(user.name);
 
