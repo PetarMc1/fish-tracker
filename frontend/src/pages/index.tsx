@@ -55,7 +55,9 @@ export default function FishPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">("count");
+  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">(
+    "count"
+  );
   const [asc, setAsc] = useState(false);
   const [showStats, setShowStats] = useState(false);
 
@@ -69,7 +71,9 @@ export default function FishPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const fishRes = await fetch(`https://api.tracker.458011.xyz/get/fish?id=${confirmedId}`);
+        const fishRes = await fetch(
+          `https://api.tracker.458011.xyz/get/fish?id=${confirmedId}`
+        );
         const fishData = await fishRes.json();
         if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
 
@@ -84,9 +88,12 @@ export default function FishPage() {
         setFishRarities(rarities);
         setTotalFishCaught(fishData.fish.length);
 
-        const crabRes = await fetch(`https://api.tracker.458011.xyz/get/crab?id=${confirmedId}`);
+        const crabRes = await fetch(
+          `https://api.tracker.458011.xyz/get/crab?id=${confirmedId}`
+        );
         const crabData = await crabRes.json();
-        if (!Array.isArray(crabData.crabs)) throw new Error("Invalid crab data");
+        if (!Array.isArray(crabData.crabs))
+          throw new Error("Invalid crab data");
         setCrabCount(crabData.crabs.length);
         setError(null);
       } catch (e: any) {
@@ -118,13 +125,20 @@ export default function FishPage() {
 
   const getFishImage = (rarity: string) => {
     switch (rarity.toLowerCase()) {
-      case "bronze": return "/fish.png";
-      case "silver": return "/fish2.png";
-      case "gold": return "/fish3.png";
-      case "diamond": return "/fish4.png";
-      case "platinum": return "/fish5.png";
-      case "mythical": return "/fish6.png";
-      default: return "/none.png";
+      case "bronze":
+        return "/fish.png";
+      case "silver":
+        return "/fish2.png";
+      case "gold":
+        return "/fish3.png";
+      case "diamond":
+        return "/fish4.png";
+      case "platinum":
+        return "/fish5.png";
+      case "mythical":
+        return "/fish6.png";
+      default:
+        return "/none.png";
     }
   };
 
@@ -134,20 +148,31 @@ export default function FishPage() {
     rarityTotals[rarity] = (rarityTotals[rarity] || 0) + count;
   });
 
-  const uniqueFishCount = Object.keys(fishCounts).filter((n) => n.toLowerCase() !== "crab").length;
+  const uniqueFishCount = Object.keys(fishCounts).filter(
+    (n) => n.toLowerCase() !== "crab"
+  ).length;
 
   const fishList = Object.entries(fishCounts)
-    .filter(([name]) =>
-      name.toLowerCase() !== "crab" &&
-      name.toLowerCase().includes(search.toLowerCase())
+    .filter(
+      ([name]) =>
+        name.toLowerCase() !== "crab" &&
+        name.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === "count") {
         return asc ? a[1] - b[1] : b[1] - a[1];
       } else if (sortBy === "rarity") {
-        const aR = rarityRank[fishRarities[a[0]]?.toLowerCase() || "unknown/other"];
-        const bR = rarityRank[fishRarities[b[0]]?.toLowerCase() || "unknown/other"];
-        return aR === bR ? (asc ? a[1] - b[1] : b[1] - a[1]) : (asc ? aR - bR : bR - aR);
+        const aR =
+          rarityRank[fishRarities[a[0]]?.toLowerCase() || "unknown/other"];
+        const bR =
+          rarityRank[fishRarities[b[0]]?.toLowerCase() || "unknown/other"];
+        return aR === bR
+          ? asc
+            ? a[1] - b[1]
+            : b[1] - a[1]
+          : asc
+          ? aR - bR
+          : bR - aR;
       } else {
         return asc ? a[0].localeCompare(b[0]) : b[0].localeCompare(a[0]);
       }
@@ -156,7 +181,10 @@ export default function FishPage() {
   if (!confirmedId) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-black text-white p-4">
-        <form onSubmit={handleSubmit} className="bg-neutral-800 p-6 rounded-2xl shadow-md space-y-4 w-full max-w-md text-center">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-neutral-800 p-6 rounded-2xl shadow-md space-y-4 w-full max-w-md text-center"
+        >
           <h1 className="text-2xl font-bold mb-2">Enter Access ID</h1>
           <input
             type="text"
@@ -198,7 +226,9 @@ export default function FishPage() {
 
       <div className="max-w-7xl mx-auto space-y-12">
         <header className="text-center space-y-3">
-          <h1 className="text-5xl font-extrabold tracking-tight">Petar&apos;s Fish</h1>
+          <h1 className="text-5xl font-extrabold tracking-tight">
+            Petar&apos;s Fish
+          </h1>
           <p className="text-neutral-400 text-sm">Live fish stats</p>
         </header>
 
@@ -230,29 +260,41 @@ export default function FishPage() {
               className="px-6 py-3 min-w-[80px] text-sm border border-neutral-700 rounded-xl hover:bg-neutral-700 transition cursor-pointer"
             >
               {sortBy === "alphabetical"
-                ? asc ? "A-Z ↑" : "Z-A ↓"
-                : asc ? "Asc ↑" : "Desc ↓"}
+                ? asc
+                  ? "A-Z ↑"
+                  : "Z-A ↓"
+                : asc
+                ? "Asc ↑"
+                : "Desc ↓"}
             </button>
           </div>
         </div>
 
         <div className="text-center space-y-1">
           <p className="text-lg font-semibold">
-            Total Fish Caught: <span className="text-blue-400">{totalFishCaught}</span>
+            Total Fish Caught:{" "}
+            <span className="text-blue-400">{totalFishCaught}</span>
           </p>
           <p className="text-lg font-semibold">
-            Total Unique Fish Caught: <span className="text-green-400">{uniqueFishCount}</span>
+            Total Unique Fish Caught:{" "}
+            <span className="text-green-400">{uniqueFishCount}</span>
           </p>
         </div>
 
         {showStats && (
           <div className="max-w-md mx-auto mt-4 bg-white/10 border border-white/20 backdrop-blur-lg p-6 rounded-3xl shadow-md select-text">
-            <h3 className="text-xl font-semibold mb-4 text-center">Fish Caught by Rarity</h3>
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Fish Caught by Rarity
+            </h3>
             <ul className="space-y-2">
               {Object.entries(rarityTotals)
                 .sort((a, b) => rarityRank[b[0]] - rarityRank[a[0]])
                 .map(([rarity, count]) => (
-                  <li key={rarity} className="flex justify-between" style={{ color: rarityColors[rarity] || "#999999" }}>
+                  <li
+                    key={rarity}
+                    className="flex justify-between"
+                    style={{ color: rarityColors[rarity] || "#999999" }}
+                  >
                     <span className="capitalize">{rarity}</span>
                     <span>{count}</span>
                   </li>
@@ -268,8 +310,16 @@ export default function FishPage() {
           {showStats ? "Show less ↑" : "Show more ↓"}
         </p>
 
-        {loading && <p className="text-center text-neutral-400 text-lg mt-6">Loading fish data...</p>}
-        {error && <p className="text-center text-red-500 text-lg mt-6">Error: {error}</p>}
+        {loading && (
+          <p className="text-center text-neutral-400 text-lg mt-6">
+            Loading fish data...
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-red-500 text-lg mt-6">
+            Error: {error}
+          </p>
+        )}
 
         {!loading && !error && (
           <>
@@ -284,10 +334,22 @@ export default function FishPage() {
                 whileHover="hover"
                 className="bg-white/10 border border-white/20 backdrop-blur-lg p-6 rounded-3xl shadow-md"
               >
-                <Image src="/crab.png" alt="Crab" width={72} height={72} className="mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold text-center mb-1">Crab</h2>
-                <p className="text-center text-neutral-400 text-sm">Rarity: ???</p>
-                <p className="text-center mt-2 text-sm text-neutral-300 font-medium">Caught: {crabCount}</p>
+                <Image
+                  src="/crab.png"
+                  alt="Crab"
+                  width={72}
+                  height={72}
+                  className="mx-auto mb-4"
+                />
+                <h2 className="text-2xl font-semibold text-center mb-1">
+                  Crab
+                </h2>
+                <p className="text-center text-neutral-400 text-sm">
+                  Rarity: ???
+                </p>
+                <p className="text-center mt-2 text-sm text-neutral-300 font-medium">
+                  Caught: {crabCount}
+                </p>
               </motion.div>
 
               <AnimatePresence>
@@ -304,12 +366,25 @@ export default function FishPage() {
                       exit="hidden"
                       className="bg-white/10 border border-white/20 backdrop-blur-lg p-6 rounded-3xl shadow-md"
                     >
-                      <Image src={getFishImage(rarity)} alt={name} width={72} height={72} className="mx-auto mb-4" />
-                      <h2 className="text-2xl font-semibold text-center mb-1">{name}</h2>
-                      <p className="text-center italic tracking-wide font-semibold" style={{ color }}>
+                      <Image
+                        src={getFishImage(rarity)}
+                        alt={name}
+                        width={72}
+                        height={72}
+                        className="mx-auto mb-4"
+                      />
+                      <h2 className="text-2xl font-semibold text-center mb-1">
+                        {name}
+                      </h2>
+                      <p
+                        className="text-center italic tracking-wide font-semibold"
+                        style={{ color }}
+                      >
                         Rarity: {rarity}
                       </p>
-                      <p className="text-center mt-2 text-sm text-neutral-300 font-medium">Caught: {count}</p>
+                      <p className="text-center mt-2 text-sm text-neutral-300 font-medium">
+                        Caught: {count}
+                      </p>
                     </motion.div>
                   );
                 })}
@@ -317,7 +392,8 @@ export default function FishPage() {
             </motion.div>
 
             <p className="text-center text-xs text-neutral-500 italic mt-10 max-w-md mx-auto">
-              *Unknown/Other means the fish isn&apos;t in the known list yet. Contact the site owner to add it.
+              *Unknown/Other means the fish isn&apos;t in the known list yet.
+              Contact the site owner to add it.
             </p>
           </>
         )}
