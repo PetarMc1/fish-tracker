@@ -48,7 +48,6 @@ async function getUserFish(req, res) {
   try {
     await client.connect();
 
-    // Step 1: Look up the user in core_users_data
     const coreDb = client.db("core_users_data");
     const usersCol = coreDb.collection("users");
     const user = await usersCol.findOne({ id: userId });
@@ -58,8 +57,6 @@ async function getUserFish(req, res) {
       res.end(JSON.stringify({ error: "User not found" }));
       return;
     }
-
-    // Step 2: Pull fish data from user-specific collection
     const fishDb = client.db("user_data_fish");
     const fishCollection = fishDb.collection(user.name);
 
