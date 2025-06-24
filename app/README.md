@@ -23,7 +23,6 @@ A desktop application that monitors Minecraft Lunar Client logs for fish and cra
 4. Click Start Monitoring to begin.
 5. The app will watch your lunarclient log file and send fish data to API
 
-
 ## Security
 
 - Encryption: [Fernet](https://cryptography.io/en/latest/fernet/) (symmetric AES-based encryption).
@@ -34,7 +33,7 @@ A desktop application that monitors Minecraft Lunar Client logs for fish and cra
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/Petar_mc/fish-tracker
+git clone https://github.com/PetarMc1/fish-tracker
 cd fish-tracker/app
 ```
 
@@ -47,11 +46,12 @@ pip install -r requirements.txt
 ```
 
 ### Build Executable (Optional)
+
 If you want you can package the program into your Windows standalone `.exe` although its better to use the [stable version](https://github.com/PetarMc1/fish-tracker/releases).
+
 ```bash
 pyinstaller --onefile --windowed --noconsole fish_logger.py
 ```
-
 
 ## Supported Log Patterns
 
