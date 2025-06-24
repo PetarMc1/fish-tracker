@@ -1,12 +1,9 @@
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
-const Fernet = require("fernet");
 
 const uri = process.env.MONGO_URI;
-const secret = process.env.ENCRYPT_RESPONSE_KEY;
 
 if (!uri) throw new Error("MONGO_URI is not set in environment");
-if (!secret) throw new Error("ENCRYPT_RESPONSE_KEY is not set in environment");
 
 async function getUserFernetKey(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -41,16 +38,9 @@ async function getUserFernetKey(req, res) {
       res.end(JSON.stringify({ error: "User not found or invalid password" }));
       return;
     }
-
-    const message = new Fernet.Token({
-      secret: new Fernet.Secret(secret),
-      time: Date.now(),
-    });
-
-    const encrypted = message.encode(JSON.stringify({ fernetKey: user.fernetKey }));
-
+    
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ encrypted }));
+    res.end(JSON.stringify({ fernetKey: user.fernetKey }));
   } catch (err) {
     console.error("[ERROR] Failed to retrieve fernetKey:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
