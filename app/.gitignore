@@ -1,0 +1,7 @@
+/.idea
+/test
+/build
+/dist
+/.venv
+fish_logger.spec
+fish.ico
