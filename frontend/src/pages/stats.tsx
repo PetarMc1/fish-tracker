@@ -51,6 +51,7 @@ export default function StatsPage() {
   const router = useRouter();
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [fishCounts, setFishCounts] = useState<Record<string, number>>({});
   const [fishRarities, setFishRarities] = useState<Record<string, string>>({});
   const [totalFishCaught, setTotalFishCaught] = useState(0);
@@ -60,7 +61,9 @@ export default function StatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [crabError, setCrabError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">("count");
+  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">(
+    "count"
+  );
   const [asc, setAsc] = useState(false);
   const [showStats, setShowStats] = useState(false);
 
@@ -79,9 +82,18 @@ export default function StatsPage() {
     const fetchFishData = async () => {
       try {
         setLoading(true);
-        const fishRes = await fetch(`https://api.tracker.458011.xyz/get/fish?id=${userId}`);
+        const fishRes = await fetch(
+          `https://api.tracker.458011.xyz/get/fish?id=${userId}`
+        );
         const fishData = await fishRes.json();
         if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
+
+        // Capitalize first letter of username from API response
+        setUsername(
+          fishData.user
+            ? fishData.user.charAt(0).toUpperCase() + fishData.user.slice(1)
+            : null
+        );
 
         const counts: Record<string, number> = {};
         const rarities: Record<string, string> = {};
@@ -104,9 +116,12 @@ export default function StatsPage() {
     const fetchCrabData = async () => {
       try {
         setCrabLoading(true);
-        const crabRes = await fetch(`https://api.tracker.458011.xyz/get/crab?id=${userId}`);
+        const crabRes = await fetch(
+          `https://api.tracker.458011.xyz/get/crab?id=${userId}`
+        );
         const crabData = await crabRes.json();
-        if (!Array.isArray(crabData.crabs)) throw new Error("Invalid crab data");
+        if (!Array.isArray(crabData.crabs))
+          throw new Error("Invalid crab data");
         setCrabCount(crabData.crabs.length);
         setCrabError(null);
       } catch (e: any) {
@@ -139,23 +154,39 @@ export default function StatsPage() {
     }
   };
 
-  const uniqueFishCount = Object.keys(fishCounts).filter((n) => n.toLowerCase() !== "crab").length;
+  const uniqueFishCount = Object.keys(fishCounts).filter(
+    (n) => n.toLowerCase() !== "crab"
+  ).length;
 
   const fishList = Object.entries(fishCounts)
-    .filter(([name]) => name.toLowerCase() !== "crab" && name.toLowerCase().includes(search.toLowerCase()))
+    .filter(
+      ([name]) =>
+        name.toLowerCase() !== "crab" &&
+        name.toLowerCase().includes(search.toLowerCase())
+    )
     .sort((a, b) => {
       if (sortBy === "count") {
         return asc ? a[1] - b[1] : b[1] - a[1];
       } else if (sortBy === "rarity") {
-        const aR = rarityRank[fishRarities[a[0]]?.toLowerCase() || "unknown/other"];
-        const bR = rarityRank[fishRarities[b[0]]?.toLowerCase() || "unknown/other"];
-        return aR === bR ? (asc ? a[1] - b[1] : b[1] - a[1]) : asc ? aR - bR : bR - aR;
+        const aR =
+          rarityRank[fishRarities[a[0]]?.toLowerCase() || "unknown/other"];
+        const bR =
+          rarityRank[fishRarities[b[0]]?.toLowerCase() || "unknown/other"];
+        return aR === bR
+          ? asc
+            ? a[1] - b[1]
+            : b[1] - a[1]
+          : asc
+          ? aR - bR
+          : bR - aR;
       } else {
         return asc ? a[0].localeCompare(b[0]) : b[0].localeCompare(a[0]);
       }
     });
 
-  const fishCountByRarity = Object.entries(fishRarities).reduce<Record<string, number>>((acc, [name, rarity]) => {
+  const fishCountByRarity = Object.entries(fishRarities).reduce<
+    Record<string, number>
+  >((acc, [name, rarity]) => {
     if (name.toLowerCase() === "crab") return acc;
     const key = rarity.toLowerCase();
     acc[key] = (acc[key] || 0) + fishCounts[name];
@@ -180,9 +211,11 @@ export default function StatsPage() {
             transition={{ duration: 0.7 }}
             className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 text-transparent bg-clip-text"
           >
-            Petar&apos;s Fish Tracker
+            {username ? `${username}'s Fish Tracker` : "Fish Tracker"}
           </motion.h1>
-          <p className="text-neutral-400 text-sm">Live fish stats with sorting and filtering</p>
+          <p className="text-neutral-400 text-sm">
+            Live fish stats with sorting and filtering
+          </p>
         </header>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -208,24 +241,38 @@ export default function StatsPage() {
               onClick={() => setAsc(!asc)}
               className="px-6 py-3 min-w-[80px] text-sm border border-neutral-700 rounded-xl hover:bg-neutral-700 transition"
             >
-              {sortBy === "alphabetical" ? (asc ? "A-Z ↑" : "Z-A ↓") : asc ? "Asc ↑" : "Desc ↓"}
+              {sortBy === "alphabetical"
+                ? asc
+                  ? "A-Z ↑"
+                  : "Z-A ↓"
+                : asc
+                ? "Asc ↑"
+                : "Desc ↓"}
             </button>
           </div>
         </div>
 
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
-            Total Fish Caught: <span className="text-blue-400">{totalFishCaught}</span>
+            Total Fish Caught:{" "}
+            <span className="text-blue-400">{totalFishCaught}</span>
           </p>
           <p className="text-lg font-semibold">
-            Total Unique Fish Caught: <span className="text-green-400">{uniqueFishCount}</span>
+            Total Unique Fish Caught:{" "}
+            <span className="text-green-400">{uniqueFishCount}</span>
           </p>
           <button
             onClick={() => setShowStats(!showStats)}
             className="mt-2 text-sm text-blue-400 hover:underline inline-flex items-center"
           >
             {showStats ? "Hide Rarity Summary" : "Show Rarity Summary"}
-            <span className={`ml-2 transition-transform ${showStats ? "rotate-180" : ""}`}>▲</span>
+            <span
+              className={`ml-2 transition-transform ${
+                showStats ? "rotate-180" : ""
+              }`}
+            >
+              ▲
+            </span>
           </button>
         </div>
 
@@ -242,8 +289,12 @@ export default function StatsPage() {
             >
               <thead className="bg-neutral-700/90">
                 <tr>
-                  <th className="px-6 py-3 border-b border-neutral-600 capitalize">Rarity</th>
-                  <th className="px-6 py-3 border-b border-neutral-600">Caught Count</th>
+                  <th className="px-6 py-3 border-b border-neutral-600 capitalize">
+                    Rarity
+                  </th>
+                  <th className="px-6 py-3 border-b border-neutral-600">
+                    Caught Count
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -267,22 +318,37 @@ export default function StatsPage() {
           animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
         >
-          {/* Crab Card */}
           <motion.div
             key="crab-card"
             variants={cardVariants}
             whileHover="hover"
             className="bg-gradient-to-br from-yellow-800/30 to-yellow-900/60 border border-yellow-700/50 backdrop-blur-lg p-6 rounded-3xl shadow-md flex flex-col items-center"
           >
-            <Image src="/crab.png" alt="Crab" width={72} height={72} className="mb-4" />
-            <h2 className="text-2xl font-semibold text-yellow-300 mb-1">Crab</h2>
-            <p className="italic tracking-wide font-semibold text-yellow-400">Rarity: ???</p>
+            <Image
+              src="/crab.png"
+              alt="Crab"
+              width={72}
+              height={72}
+              className="mb-4"
+            />
+            <h2 className="text-2xl font-semibold text-yellow-300 mb-1">
+              Crab
+            </h2>
+            <p className="italic tracking-wide font-semibold text-yellow-400">
+              Rarity: ???
+            </p>
             {crabLoading ? (
-              <p className="text-yellow-300 mt-2 text-sm font-medium">Loading...</p>
+              <p className="text-yellow-300 mt-2 text-sm font-medium">
+                Loading...
+              </p>
             ) : crabError ? (
-              <p className="text-red-500 mt-2 text-xs text-center">{crabError}</p>
+              <p className="text-red-500 mt-2 text-xs text-center">
+                {crabError}
+              </p>
             ) : (
-              <p className="text-yellow-400 mt-2 text-sm font-medium">Caught: {crabCount}</p>
+              <p className="text-yellow-400 mt-2 text-sm font-medium">
+                Caught: {crabCount}
+              </p>
             )}
           </motion.div>
 
@@ -296,10 +362,22 @@ export default function StatsPage() {
                 whileHover="hover"
                 className="bg-gradient-to-br from-blue-900/30 to-purple-900/60 border border-white/20 backdrop-blur-lg p-6 rounded-3xl shadow-md flex flex-col items-center"
               >
-                <Image src={getFishImage(rarity)} alt={name} width={72} height={72} className="mb-4" />
-                <h2 className="text-2xl font-semibold text-center mb-1">{name}</h2>
-                <p className="italic tracking-wide font-semibold text-blue-400 capitalize">Rarity: {rarity}</p>
-                <p className="mt-2 text-sm text-neutral-300 font-medium">Caught: {count}</p>
+                <Image
+                  src={getFishImage(rarity)}
+                  alt={name}
+                  width={72}
+                  height={72}
+                  className="mb-4"
+                />
+                <h2 className="text-2xl font-semibold text-center mb-1">
+                  {name}
+                </h2>
+                <p className="italic tracking-wide font-semibold text-blue-400 capitalize">
+                  Rarity: {rarity}
+                </p>
+                <p className="mt-2 text-sm text-neutral-300 font-medium">
+                  Caught: {count}
+                </p>
               </motion.div>
             );
           })}
