@@ -14,7 +14,7 @@ You can selfhost the API if you dont want to  use my instance.
 ### Install Dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 
