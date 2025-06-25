@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "framer-motion": "^12.19.1",
-    "js-cookie": "^3.0.5",
     "next": "15.3.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -24,6 +23,7 @@
     "@types/react-dom": "^19.1.6",
     "eslint": "^9.29.0",
     "eslint-config-next": "15.3.4",
+    "js-cookie": "^3.0.5",
     "tailwindcss": "^4.1.10",
     "typescript": "^5.8.3"
   },
