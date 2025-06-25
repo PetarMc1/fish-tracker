@@ -8,25 +8,16 @@ function getDemoFish(req, res) {
   }
 
   const data = {
-    user: "petar",
+    user: "user",
     fish: [
-      { name: "Starfin", rarity: "Bronze" },
-      { name: "Perch", rarity: "Bronze" },
-      { name: "Starfin", rarity: "Bronze" },
-      { name: "Buttercup Fish", rarity: "Bronze" },
-      { name: "Buttercup Fish", rarity: "Bronze" },
-      { name: "Starfin", rarity: "Bronze" },
-      { name: "Dewfin", rarity: "Bronze" },
-      { name: "Lorcan Fish", rarity: "Bronze" },
-      { name: "Ianthe", rarity: "Bronze" },
-      { name: "Ripplethorn", rarity: "Bronze" },
-      { name: "Mistral Koi", rarity: "Silver" },
-      { name: "Moonshade Snapper", rarity: "Silver" },
-      { name: "Flatfish", rarity: "Bronze" },
-      { name: "Chunky Chub", rarity: "Silver" },
-      { name: "Whisperbass", rarity: "Silver" },
-      { name: "Titan Trout", rarity: "Gold" }
-    ]
+      { name: "fish", rarity: "Bronze" },
+      { name: "fish2 ", rarity: "Silver" },
+      { name: "fish3", rarity: "Gold" } ,
+      { name: "fish4", rarity: "Diamond" } ,
+      { name: "fish5", rarity: "Platinum" },
+      { name: "fish6", rarity: "Mythical" },
+      { name: "fish7", rarity: "Unknown/Other" },
+     ]
   };
 
   res.writeHead(200, { "Content-Type": "application/json" });
