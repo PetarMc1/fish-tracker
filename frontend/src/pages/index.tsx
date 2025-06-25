@@ -18,10 +18,45 @@ export default function Home() {
           </h1>
           <p className="text-lg mt-4 text-neutral-400 max-w-2xl mx-auto">
             A powerful full-stack app to track, sort, and visualize your catches on the{" "}
-            <a href="https://cosmosmc.org" target="_blank" className="text-blue-400 underline">
+            <a href="https://cosmosmc.org" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">
               CosmosMC Minecraft server
             </a>. Built with Next.js, TailwindCSS, Node.js, and MongoDB.
           </p>
+        </motion.div>
+
+        {/* Application and Demo Section */}
+        <Section title="Reserved Fishing Spot Application" />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="max-w-xl mx-auto text-center text-neutral-400"
+        >
+          <p className="mb-6">
+            Want a reserved spot for the tracker? Join my{" "}
+            <a href="https://discord.gg/Uah2dNRhFV" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">
+              Discord server
+            </a>{" "}
+            and apply through the applications channel.
+          </p>
+          <div className="flex justify-center gap-4">
+            <a
+              href="https://discord.gg/Uah2dNRhFV"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-5 py-2 border border-blue-400 rounded-full text-blue-400 font-semibold hover:bg-blue-400 hover:text-black transition"
+            >
+              Join Discord & Apply
+            </a>
+            <a
+              href="/demo" 
+              rel="noopener noreferrer"
+              className="inline-block px-5 py-2 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full text-white font-semibold hover:brightness-110 transition"
+            >
+              Try the Demo →
+            </a>
+          </div>
         </motion.div>
 
         <Section title="Key Features" />
@@ -48,8 +83,8 @@ export default function Home() {
           transition={{ delay: 0.3 }}
           className="text-center text-sm text-neutral-500 pt-12"
         >
-          Not affiliated with CosmosMC. Built by Petar.{" "}
-          <a href="https://discord.gg/Uah2dNRhFV" className="text-blue-400 underline" target="_blank">
+          Not affiliated with CosmosMC. Built by Petar_mc.{" "}
+          <a href="https://discord.gg/Uah2dNRhFV" className="text-blue-400 underline" target="_blank" rel="noopener noreferrer">
             Join the Discord →
           </a>
         </motion.div>
@@ -114,13 +149,13 @@ function Section({ title }: { title: string }) {
 
 function RarityTable() {
   const rows = [
-    ["7", "Mythical", "INSANE CATCH!", "Ultra rare / top-tier new fish", "bg-gradient-to-r from-purple-600 to-pink-500"],
-    ["6", "Platinum", "LEGENDARY CATCH!", "Very rare / exceptional new fish", "bg-gradient-to-r from-blue-400 to-cyan-500"],
-    ["4", "Diamond", "EPIC CATCH!", "Rare / high-tier new fish", "bg-gradient-to-r from-cyan-400 to-indigo-500"],
-    ["3", "Gold", "GREAT CATCH!", "Above average / mid-tier new fish", "bg-gradient-to-r from-yellow-400 to-amber-500"],
-    ["2", "Silver", "NICE CATCH!", "Uncommon / low-mid new fish", "bg-gradient-to-r from-gray-400 to-slate-500"],
-    ["1", "Bronze", "GOOD CATCH!", "Common / basic new fish", "bg-gradient-to-r from-amber-600 to-orange-600"],
-    ["5", "Default", "You caught a <Fish>", "Normal catch or unknown rarity", "bg-white/10"],
+    ["7", "Mythical", "INSANE CATCH!", "Ultra rare / top-tier fish", "bg-gradient-to-r from-purple-600 to-pink-500"],
+    ["6", "Platinum", "LEGENDARY CATCH!", "Very rare / exceptional fish", "bg-gradient-to-r from-blue-400 to-cyan-500"],
+    ["4", "Diamond", "EPIC CATCH!", "Rare / high-tier fish", "bg-gradient-to-r from-cyan-400 to-indigo-500"],
+    ["3", "Gold", "GREAT CATCH!", "Above average / mid-tier fish", "bg-gradient-to-r from-yellow-400 to-amber-500"],
+    ["2", "Silver", "NICE CATCH!", "Uncommon / low-mid fish", "bg-gradient-to-r from-gray-400 to-slate-500"],
+    ["1", "Bronze", "GOOD CATCH!", "Common / basic fish", "bg-gradient-to-r from-amber-600 to-orange-600"],
+    ["5", "Default", "You caught a <Fish>", "Unknown rarity", "bg-white/10"],
   ];
 
   return (
