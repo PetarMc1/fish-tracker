@@ -94,3 +94,6 @@ FISHING ▶ You fished up a Crab!
 | 5    | Default (no tag/unknown) | `You caught a <Fish>`, `NEW ENTRY! You caught a <Fish>` (unknown tier) | Normal catch or unknown rarity    |
 
 Rarity is set as a number to save database space and make it easier and faster to process.
+
+
+## [License](/README.md#license)
