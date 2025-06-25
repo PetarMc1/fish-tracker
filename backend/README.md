@@ -165,3 +165,5 @@ Raw Fernet-encrypted string of:
   "password": "password"
 }
 ```
+
+## [License](/README.md#license)
