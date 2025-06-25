@@ -81,19 +81,6 @@ NEW ENTRY! You caught a Bronze Fish for the first time.
 FISHING ▶ You fished up a Crab!
 ```
 
-## Full Fish Rarity Mapping
-
-| Tier | Rarity Names             | Log Prefixes / Example Text                                            | Description                       |
-| ---- | ------------------------ | ---------------------------------------------------------------------- | --------------------------------- |
-| 7    | Mythical                 | `INSANE CATCH!`, `NEW ENTRY! You caught a MYTHICAL <Fish>`             | Ultra rare / top-tier new fish    |
-| 6    | Platinum                 | `LEGENDARY CATCH!`, `NEW ENTRY! You caught a PLATINUM <Fish>`          | Very rare / exceptional new fish  |
-| 4    | Diamond                  | `EPIC CATCH!`, `NEW ENTRY! You caught a DIAMOND <Fish>`                | Rare / high-tier new fish         |
-| 3    | Gold                     | `GREAT CATCH!`, `NEW ENTRY! You caught a GOLD <Fish>`                  | Above average / mid-tier new fish |
-| 2    | Silver                   | `NICE CATCH!`, `NEW ENTRY! You caught a SILVER <Fish>`                 | Uncommon / low-mid new fish       |
-| 1    | Bronze                   | `GOOD CATCH!`, `NEW ENTRY! You caught a BRONZE <Fish>`                 | Common / basic new fish           |
-| 5    | Default (no tag/unknown) | `You caught a <Fish>`, `NEW ENTRY! You caught a <Fish>` (unknown tier) | Normal catch or unknown rarity    |
-
-Rarity is set as a number to save database space and make it easier and faster to process.
-
+## [Full Fish Rarity Mapping](/README.md#full-fish-rarity-mapping)
 
 ## [License](/README.md#license)

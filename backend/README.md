@@ -166,4 +166,7 @@ Raw Fernet-encrypted string of:
 }
 ```
 
+
+## [Full Fish Rarity Mapping](/README.md#full-fish-rarity-mapping)
+
 ## [License](/README.md#license)
