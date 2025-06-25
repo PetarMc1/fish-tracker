@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/github/license/PetarMc1/fish-tracker)
 [![Discord](https://img.shields.io/discord/1281676657169535097?logo=Discord&logoColor=white&label=Discord&labelColor=blue&color=green&cacheSeconds=10)
 ](https://discord.gg/Uah2dNRhFV)
-![commit activity](https://img.shields.io/github/commit-activity/t/PetarMc1/fish-tracker?label=Commits&labelColor=%2300ff00)
+![commit activity](https://img.shields.io/github/commit-activity/t/PetarMc1/fish-tracker?label=Commits&labelColor=%23008000)
 ![Release](https://img.shields.io/github/v/release/PetarMc1/fish-tracker?include_prereleases&label=Release&labelColor=%23ffa500)
 
 A full-stack application to track and visualize fishing statistics on the [**CosmosMC Minecraft server**](https://cosmosmc.org).
