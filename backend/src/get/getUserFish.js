@@ -4,24 +4,9 @@ const { MongoClient } = require("mongodb");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in environment");
 
-function mapRarity(rarity) {
-  switch (rarity) {
-    case 1:
-      return "Bronze";
-    case 2:
-      return "Silver";
-    case 3:
-      return "Gold";
-    case 4:
-      return "Diamond";
-    case 6:
-      return "Platinum";
-    case 7:
-      return "Mythical";
-    default:
-      return "Unknown/Other";
-  }
-}
+// Create one MongoClient and connect once
+const client = new MongoClient(uri);
+const clientPromise = client.connect();
 
 async function getUserFish(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -33,10 +18,7 @@ async function getUserFish(req, res) {
     return;
   }
 
-  const userId = new URL(
-    req.url,
-    `https://${req.headers.host}`
-  ).searchParams.get("id");
+  const userId = new URL(req.url, `https://${req.headers.host}`).searchParams.get("id");
 
   if (!userId) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -44,40 +26,51 @@ async function getUserFish(req, res) {
     return;
   }
 
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
+    await clientPromise; // wait for connection once
 
     const coreDb = client.db("core_users_data");
-    const usersCol = coreDb.collection("users");
-    const user = await usersCol.findOne({ id: userId });
+    const fishDb = client.db("user_data_fish");
+
+    const user = await coreDb.collection("users").findOne({ id: userId });
 
     if (!user || !user.name) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "User not found" }));
       return;
     }
-    const fishDb = client.db("user_data_fish");
+
     const fishCollection = fishDb.collection(user.name);
 
-    const fishDocs = await fishCollection
-      .find({}, { projection: { fish: 1, rarity: 1, _id: 0 } })
-      .toArray();
-
-    const formattedFish = fishDocs.map((doc) => ({
-      name: doc.fish,
-      rarity: mapRarity(doc.rarity),
-    }));
+    // Aggregate with rarity mapping in MongoDB
+    const fishDocs = await fishCollection.aggregate([
+      {
+        $project: {
+          _id: 0,
+          name: "$fish",
+          rarity: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$rarity", 1] }, then: "Bronze" },
+                { case: { $eq: ["$rarity", 2] }, then: "Silver" },
+                { case: { $eq: ["$rarity", 3] }, then: "Gold" },
+                { case: { $eq: ["$rarity", 4] }, then: "Diamond" },
+                { case: { $eq: ["$rarity", 6] }, then: "Platinum" },
+                { case: { $eq: ["$rarity", 7] }, then: "Mythical" },
+              ],
+              default: "Unknown/Other",
+            },
+          },
+        },
+      },
+    ]).toArray();
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ user: user.name, fish: formattedFish }));
+    res.end(JSON.stringify({ user: user.name, fish: fishDocs }));
   } catch (err) {
     console.error("[ERROR] Failed to retrieve fish:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
-  } finally {
-    await client.close();
   }
 }
 
