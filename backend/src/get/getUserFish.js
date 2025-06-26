@@ -25,7 +25,7 @@ function mapRarity(rarity) {
 
 async function getUserFish(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=10, stale-while-revalidate=5");
+  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=70, stale-while-revalidate=5");
 
   if (req.method !== "GET") {
     res.writeHead(405, { "Content-Type": "application/json" });
