@@ -6,7 +6,6 @@ const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in your environment variables");
 
 async function handleUserCrabs(req, res) {
-  console.log(`[INFO] Incoming request: ${req.method} ${req.url}`);
 
   if (req.method !== "POST") {
     res.writeHead(405, { "Content-Type": "application/json" });

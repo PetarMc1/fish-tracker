@@ -8,7 +8,6 @@ if (!uri) {
 }
 
 async function handleFish(req, res) {
-  console.log("Received request:", req.method, req.headers["content-type"]);
 
   if (req.method !== "POST") {
     res.writeHead(405, { "Content-Type": "application/json" });

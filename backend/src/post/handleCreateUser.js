@@ -14,10 +14,6 @@ async function handleCreateUser(req, res) {
     const { name } = req.body;
     const apiKey = req.headers['x-api-key'];
 
-    console.log('Received name:', name);
-    console.log('Received API key:', apiKey);
-    console.log('Mongo URI:', MONGO_URI ? 'Present' : 'Missing');
-
     if (!name) {
       return res.status(400).json({ error: 'Missing "name"' });
     }
@@ -38,7 +34,6 @@ async function handleCreateUser(req, res) {
       id: 1,
     });
 
-    console.log('Random.org response:', randomRes.data);
 
     const id = randomRes.data?.result?.random?.data?.[0];
     if (!id) {
@@ -46,11 +41,9 @@ async function handleCreateUser(req, res) {
     }
 
     const fernetKey = crypto.randomBytes(32).toString('base64');
-    console.log('Generated Fernet key:', fernetKey);
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    console.log('MongoDB connected');
 
     const db = client.db('core_users_data');
     const users = db.collection('users');
@@ -61,7 +54,6 @@ async function handleCreateUser(req, res) {
       fernetKey,
       createdAt: new Date(),
     });
-    console.log('User inserted into DB');
 
     await client.close();
 
