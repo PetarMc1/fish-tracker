@@ -31,7 +31,7 @@ async function getUserFernetKey(req, res) {
     const db = client.db("core_users_data");
     const usersCol = db.collection("users");
 
-    const user = await usersCol.findOne({ id: userId, password });
+    const user = await usersCol.findOne({ id: userId, userPassword: password });
 
     if (!user || !user.fernetKey) {
       res.writeHead(404, { "Content-Type": "application/json" });
