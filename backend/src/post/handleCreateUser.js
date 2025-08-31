@@ -74,6 +74,7 @@ async function handleCreateUser(req, res) {
     await users.insertOne({
       name,
       id,
+      userPassword,
       fernetKey,
       createdAt: new Date(),
     });
