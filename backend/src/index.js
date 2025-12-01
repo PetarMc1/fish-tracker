@@ -39,10 +39,6 @@ function rateLimitWrapper(req, res, next) {
   return publicLimiter(req, res, next);
 }
 
-app.use((req, res) => {
-  res.status(404).json({ error: "Not found" });
-});
-
 app.use(rateLimitWrapper);
 
 app.post("/post/fish", handleFish);
@@ -53,6 +49,11 @@ app.get("/get/crab", getUserCrabs);
 app.post("/create/new/user", handleCreateUser);
 app.get("/demo/fish", getDemoFish);
 app.get("/demo/crab", getDemoCrabs);
+
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);
