@@ -42,6 +42,9 @@ class FishMonitorApp:
         self._init_fonts()
         self._build_ui()
 
+        # Trace debug variable to toggle debug logging and visibility
+        self.debug.trace_add("write", self.toggle_debug_mode)
+
     def _init_fonts(self):
         self.header_font = font.Font(family="Segoe UI", size=16, weight="bold")
         self.body_font = font.Font(family="Segoe UI", size=11)
@@ -50,7 +53,6 @@ class FishMonitorApp:
     def _build_ui(self):
 
         tk.Label(self.root, text="Fish & Crab Monitor", font=self.header_font, bg="#121212", fg="#E0E0E0").pack(pady=(10,10))
-
 
         login_frame = tk.Frame(self.root, bg="#121212")
         login_frame.pack(fill="x", padx=20, pady=5)
@@ -81,6 +83,7 @@ class FishMonitorApp:
         options_frame.pack(fill="x", padx=20, pady=5)
         tk.Checkbutton(options_frame, text="Debug Mode", variable=self.debug,
                        bg="#121212", fg="#E0E0E0", font=self.body_font, selectcolor="#222222").pack(anchor="w")
+
         buttons_frame = tk.Frame(self.root, bg="#121212")
         buttons_frame.pack(pady=10)
         self.start_button = tk.Button(buttons_frame, text="Start Monitoring", font=self.body_font, bg="#388E3C", fg="#ffffff",
@@ -92,11 +95,26 @@ class FishMonitorApp:
 
         tk.Label(self.root, textvariable=self.status_var, font=self.status_font, bg="#121212", fg="#E0E0E0").pack(pady=5)
 
+        # Debug frame
         debug_frame = tk.LabelFrame(self.root, text="Debug Log", font=self.body_font, bg="#121212", fg="#E0E0E0")
         debug_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        self.debug_frame = debug_frame  # store reference for toggling
+
         self.debug_text = scrolledtext.ScrolledText(debug_frame, font=("Consolas", 10), bg="#1B1B1B", fg="#E0E0E0")
         self.debug_text.pack(fill="both", expand=True, padx=5, pady=5)
         self.debug_text.config(state="disabled")
+
+    def toggle_debug_mode(self, *args):
+        if self.debug.get():
+            # Show debug panel
+            self.debug_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            self.gui_debug("[DEBUG] Debug mode enabled.")
+        else:
+            # Hide debug panel and clear text
+            self.debug_text.config(state="normal")
+            self.debug_text.delete(1.0, tk.END)
+            self.debug_text.config(state="disabled")
+            self.debug_frame.pack_forget()
 
     def update_log_path_label(self):
         path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
