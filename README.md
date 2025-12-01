@@ -11,6 +11,17 @@
 
 A full-stack application to track and visualize fishing statistics on the [**CosmosMC Minecraft server**](https://cosmosmc.org).
 
+## v1.1.0 ToDo
+- [ ] **Add other clients support**
+  - [ ] Feather Client
+  - [ ] Official Minecraft Launcher
+  - [ ] Custom Client Support
+- [ ] Add rate limiting to API endpoints
+- [ ] Add username + password authentication to frontend
+- [ ] Dockerize backend
+- [ ] Dockerize frontend 
+- [ ] Add auto build-upload pipeline for app
+
 ## App (Desktop Logger)
 
 - Parses **Lunar Client logs** to detect fishing and crab catching events.
