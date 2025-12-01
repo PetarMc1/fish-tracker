@@ -1,4 +1,7 @@
+require("dotenv").config();
 const express = require("express");
+const rateLimit = require("express-rate-limit");
+const cors = require("cors");
 
 const { handleFish } = require("./post/handleUserFish");
 const { handleUserCrabs } = require("./post/handleUserCrabs");
@@ -6,27 +9,51 @@ const { getUserFish } = require("./get/getUserFish");
 const { getUserCrabs } = require("./get/getUserCrabs");
 const { handleCreateUser } = require("./post/handleCreateUser");
 const { getUserFernetKey } = require("./get/getUserFernetKey");
-const { getDemoCrabs } = require('./get/getDemoCrabs')
-const { getDemoFish } = require('./get/getDemoFish')
+const { getDemoCrabs } = require("./get/getDemoCrabs");
+const { getDemoFish } = require("./get/getDemoFish");
+
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || "*",
+  methods: ["GET","POST"],
+}));
+
 app.use(express.json());
 
-app.post("/post/fish", (req, res) => handleFish(req, res));
-app.post("/post/crab", (req, res) => handleUserCrabs(req, res));
-app.get("/get/user/key", (req, res) => getUserFernetKey(req, res));
-app.get("/get/fish", (req, res) => getUserFish(req, res));
-app.get("/get/crab", (req, res) => getUserCrabs(req, res));
-app.post("/create/new/user", (req, res) => handleCreateUser(req, res));
+const publicLimiter = rateLimit({
+  windowMs: 4 * 60 * 1000, 
+  max: 35,  
+  message: { error: "Try again later." }
+});
 
-app.get("/demo/fish", (req, res) => getDemoFish(req, res));
-app.get("/demo/crab", (req, res) => getDemoCrabs(req, res));
+
+function rateLimitWrapper(req, res, next) {
+  const key = req.headers["x-api-key"];
+  
+  if (key && key === process.env.FRONTEND_API_KEY) {
+    return next();
+  }
+
+  return publicLimiter(req, res, next);
+}
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
 });
 
+app.use(rateLimitWrapper);
+
+app.post("/post/fish", handleFish);
+app.post("/post/crab", handleUserCrabs);
+app.get("/get/user/key", getUserFernetKey);
+app.get("/get/fish", getUserFish);
+app.get("/get/crab", getUserCrabs);
+app.post("/create/new/user", handleCreateUser);
+app.get("/demo/fish", getDemoFish);
+app.get("/demo/crab", getDemoCrabs);
+
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server listening on http://0.0.0.0:${PORT}`);
+  console.log(`Server running at http://0.0.0.0:${PORT}`);
 });
