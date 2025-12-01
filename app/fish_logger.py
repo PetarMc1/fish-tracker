@@ -2,15 +2,16 @@ import os
 import re
 import time
 import json
-
 import threading
 import requests
 import tkinter as tk
-from tkinter import font, messagebox
+from tkinter import font, messagebox, scrolledtext
 from cryptography.fernet import Fernet
 
 USER_HOME = os.path.expanduser("~")
-LOG_PATH = os.path.join(USER_HOME, ".lunarclient", "offline", "multiver", "logs", "latest.log")
+
+LUNAR_LOG = os.path.join(USER_HOME, ".lunarclient", "offline", "multiver", "logs", "latest.log")
+FEATHER_LOG = os.path.join(USER_HOME, "AppData", "Roaming", ".minecraft", "feather", "logs", "latest.log")
 
 PATTERN_FISH = re.compile(
     r"(EPIC|GREAT|NICE|GOOD|LEGENDARY|INSANE)? ?CATCH! (?:Your Augments caught|You caught) (?:a|an) ([^!]+?)(?: with a length of [\d.]+cm)?[.!]",
@@ -19,23 +20,22 @@ PATTERN_FISH = re.compile(
 PATTERN_CRAB = re.compile(r"FISHING ▶ You fished up a ([^!]+)!", re.IGNORECASE)
 PATTERN_NEW_ENTRY = re.compile(r"NEW ENTRY! You caught (?:a|an) (.+?) for the first time[.!]", re.IGNORECASE)
 
-RARITY_MAP = {
-    "GOOD": 1, "NICE": 2, "GREAT": 3, "EPIC": 4, "LEGENDARY": 6, "INSANE": 7
-}
-NEW_ENTRY_RARITY = {
-    "BRONZE": 1, "SILVER": 2, "GOLD": 3, "DIAMOND": 4, "PLATINUM": 6, "MYTHICAL": 7
-}
+RARITY_MAP = {"GOOD":1,"NICE":2,"GREAT":3,"EPIC":4,"LEGENDARY":6,"INSANE":7}
+NEW_ENTRY_RARITY = {"BRONZE":1,"SILVER":2,"GOLD":3,"DIAMOND":4,"PLATINUM":6,"MYTHICAL":7}
+
 
 class FishMonitorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Fish & Crab Monitor")
-        self.root.geometry("560x300")
+        self.root.geometry("700x600")
         self.root.configure(bg="#121212")
 
         self.monitoring = False
-        self.thread = None
         self.fernet = None
+        self.api_key = None
+        self.debug = tk.BooleanVar(value=True)  # debug ON by default
+        self.log_source = tk.StringVar(value="lunar")
 
         self.status_var = tk.StringVar(value="Status: Idle")
 
@@ -48,146 +48,151 @@ class FishMonitorApp:
         self.status_font = font.Font(family="Segoe UI", size=12, slant="italic")
 
     def _build_ui(self):
-        self._make_label("Fish Monitor", self.header_font).pack(pady=(10, 4))
 
-        tk.Label(self.root, text="User ID:", font=self.body_font, bg="#121212", fg="#E0E0E0").pack()
-        self.id_entry = tk.Entry(self.root, font=self.body_font)
-        self.id_entry.pack(pady=(0, 8))
+        tk.Label(self.root, text="Fish & Crab Monitor", font=self.header_font, bg="#121212", fg="#E0E0E0").pack(pady=(10,10))
 
-        tk.Label(self.root, text="Password:", font=self.body_font, bg="#121212", fg="#E0E0E0").pack()
-        self.password_entry = tk.Entry(self.root, font=self.body_font, show="*")
-        self.password_entry.pack(pady=(0, 8))
 
-        tk.Label(self.root, text=f"Log File:\n{LOG_PATH}", font=self.body_font, bg="#121212", fg="#E0E0E0", wraplength=520).pack(pady=(4, 4))
-        self.status_label = self._make_label("", self.status_font, textvariable=self.status_var)
-        self.status_label.pack(pady=4)
+        login_frame = tk.Frame(self.root, bg="#121212")
+        login_frame.pack(fill="x", padx=20, pady=5)
+        tk.Label(login_frame, text="User ID:", bg="#121212", fg="#E0E0E0", font=self.body_font).grid(row=0,column=0, sticky="w")
+        self.id_entry = tk.Entry(login_frame, font=self.body_font); self.id_entry.grid(row=0,column=1, pady=2, sticky="ew")
+        tk.Label(login_frame, text="Password:", bg="#121212", fg="#E0E0E0", font=self.body_font).grid(row=1,column=0, sticky="w")
+        self.password_entry = tk.Entry(login_frame, font=self.body_font, show="*"); self.password_entry.grid(row=1,column=1, pady=2, sticky="ew")
+        login_frame.columnconfigure(1, weight=1)
 
-        self.start_button = self._make_button("Start Monitoring", "#388E3C", self.start_monitoring)
-        self.start_button.pack(pady=(5, 4))
+        api_frame = tk.Frame(self.root, bg="#121212")
+        api_frame.pack(fill="x", padx=20, pady=5)
+        tk.Label(api_frame, text="Auth API Key:", bg="#121212", fg="#E0E0E0", font=self.body_font).grid(row=0,column=0, sticky="w")
+        self.api_entry = tk.Entry(api_frame, font=self.body_font); self.api_entry.grid(row=0,column=1, pady=2, sticky="ew")
+        api_frame.columnconfigure(1, weight=1)
 
-        self.stop_button = self._make_button("Stop Monitoring", "#D32F2F", self.stop_monitoring, "disabled")
-        self.stop_button.pack()
+        log_frame = tk.LabelFrame(self.root, text="Log Source", font=self.body_font, bg="#121212", fg="#E0E0E0", labelanchor="n")
+        log_frame.pack(fill="x", padx=20, pady=10)
+        tk.Radiobutton(log_frame, text="Lunar Client", variable=self.log_source, value="lunar",
+                       bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
+        tk.Radiobutton(log_frame, text="Feather Client", variable=self.log_source, value="feather",
+                       bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
+        self.log_display = tk.Label(log_frame, text="", font=self.body_font, bg="#121212", fg="#E0E0E0", wraplength=650)
+        self.log_display.pack(padx=10, pady=5)
+        self.update_log_path_label()
+        self.log_source.trace("w", lambda *_: self.update_log_path_label())
 
-    def _make_label(self, text="", font=None, textvariable=None, wraplength=None):
-        return tk.Label(
-            self.root,
-            text=text,
-            textvariable=textvariable,
-            font=font,
-            wraplength=wraplength,
-            bg="#121212",
-            fg="#E0E0E0",
-            anchor="center"
-        )
+        options_frame = tk.Frame(self.root, bg="#121212")
+        options_frame.pack(fill="x", padx=20, pady=5)
+        tk.Checkbutton(options_frame, text="Debug Mode", variable=self.debug,
+                       bg="#121212", fg="#E0E0E0", font=self.body_font, selectcolor="#222222").pack(anchor="w")
+        buttons_frame = tk.Frame(self.root, bg="#121212")
+        buttons_frame.pack(pady=10)
+        self.start_button = tk.Button(buttons_frame, text="Start Monitoring", font=self.body_font, bg="#388E3C", fg="#ffffff",
+                                      padx=10, pady=6, relief="flat", command=self.start_monitoring)
+        self.start_button.pack(side="left", padx=5)
+        self.stop_button = tk.Button(buttons_frame, text="Stop Monitoring", font=self.body_font, bg="#D32F2F", fg="#ffffff",
+                                     padx=10, pady=6, relief="flat", command=self.stop_monitoring, state="disabled")
+        self.stop_button.pack(side="left", padx=5)
 
-    def _make_button(self, text, bg, command=None, state="normal"):
-        return tk.Button(
-            self.root,
-            text=text,
-            font=self.body_font,
-            bg=bg,
-            fg="#ffffff",
-            activebackground="#1F1F1F",
-            activeforeground="#ffffff",
-            relief=tk.FLAT,
-            padx=10,
-            pady=6,
-            bd=0,
-            command=command,
-            state=state,
-            highlightthickness=0
-        )
+        tk.Label(self.root, textvariable=self.status_var, font=self.status_font, bg="#121212", fg="#E0E0E0").pack(pady=5)
+
+        debug_frame = tk.LabelFrame(self.root, text="Debug Log", font=self.body_font, bg="#121212", fg="#E0E0E0")
+        debug_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        self.debug_text = scrolledtext.ScrolledText(debug_frame, font=("Consolas", 10), bg="#1B1B1B", fg="#E0E0E0")
+        self.debug_text.pack(fill="both", expand=True, padx=5, pady=5)
+        self.debug_text.config(state="disabled")
+
+    def update_log_path_label(self):
+        path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
+        self.log_display.config(text=f"Log Path:\n{path}")
+
+    def gui_debug(self, message):
+        if self.debug.get():
+            self.debug_text.config(state="normal")
+            self.debug_text.insert(tk.END, message + "\n")
+            self.debug_text.see(tk.END)
+            self.debug_text.config(state="disabled")
 
     def fetch_fernet_key(self, user_id, password):
         try:
             url = f"https://api.tracker.458011.xyz/get/user/key?id={user_id}&password={password}"
-            resp = requests.get(url)
-            if resp.status_code != 200:
-                raise Exception(f"Status {resp.status_code}")
-
-            key_data = resp.json()
-            fernet_key = key_data.get("fernetKey")
-            if not fernet_key:
-                raise Exception("fernetKey not found in response")
-
-            return Fernet(fernet_key)
+            resp = requests.get(url, headers={"x-api-key": self.api_key})
+            self.gui_debug(f"[GET] {url} | Status {resp.status_code}")
+            fk = resp.json().get("fernetKey")
+            if not fk: raise Exception("No fernetKey returned")
+            self.gui_debug("[DEBUG] Fernet Key Retrieved")
+            return Fernet(fk)
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to get encryption key:\n{e}")
+            messagebox.showerror("Error", f"Key Fetch Failed:\n{e}")
+            self.gui_debug(f"[ERROR] Key Fetch Failed: {e}")
             return None
 
     def start_monitoring(self):
         user_id = self.id_entry.get().strip()
         password = self.password_entry.get().strip()
-        if not user_id or not password:
-            messagebox.showerror("Error", "ID and Password are required.")
+        self.api_key = self.api_entry.get().strip()
+        if not user_id or not password or not self.api_key:
+            messagebox.showerror("Error", "All fields required.")
             return
-
-        fernet = self.fetch_fernet_key(user_id, password)
-        if not fernet:
-            return
-
+        self.fernet = self.fetch_fernet_key(user_id, password)
+        if not self.fernet: return
         self.user_id = user_id
-        self.fernet = fernet
         self.monitoring = True
-
-        self.status_var.set("Status: Monitoring...")
         self.start_button.config(state="disabled")
         self.stop_button.config(state="normal")
-
+        self.status_var.set("Status: Monitoring...")
         self.thread = threading.Thread(target=self.monitor_log, daemon=True)
         self.thread.start()
+        self.gui_debug("[DEBUG] Monitoring started.")
 
     def stop_monitoring(self):
         self.monitoring = False
-        self.status_var.set("Status: Stopped")
         self.start_button.config(state="normal")
         self.stop_button.config(state="disabled")
+        self.status_var.set("Status: Stopped")
+        self.gui_debug("[DEBUG] Monitoring stopped.")
 
     def send_to_endpoint(self, path, data):
         try:
-            encrypted = self.fernet.encrypt(json.dumps(data).encode("utf-8"))
+            encrypted = self.fernet.encrypt(json.dumps(data).encode())
             url = f"https://api.tracker.458011.xyz/post/{path}?id={self.user_id}"
-            headers = {"Content-Type": "application/octet-stream"}
-            requests.post(url, data=encrypted, headers=headers)
-        except:
-            pass
+            r = requests.post(url, data=encrypted, headers={"x-api-key": self.api_key})
+            self.gui_debug(f"[POST] {url} → {data} | Status {r.status_code}")
+        except Exception as e:
+            self.gui_debug(f"[ERROR] Send Failed: {e}")
 
     def monitor_log(self):
+        path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
+        self.gui_debug(f"[DEBUG] Watching log: {path}")
         try:
-            with open(LOG_PATH, "r", encoding="utf-8") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 f.seek(0, 2)
-
                 while self.monitoring:
                     line = f.readline()
-                    if not line:
-                        time.sleep(0.1)
-                        continue
+                    if not line: time.sleep(0.1); continue
 
-                    match = PATTERN_FISH.search(line)
-                    if match:
-                        rarity_key = (match.group(1) or "").strip().upper()
-                        fish_name = match.group(2).strip()
-                        rarity = RARITY_MAP.get(rarity_key, 5)
-                        self.send_to_endpoint("fish", {"fish": fish_name, "rarity": rarity})
+                    m = PATTERN_FISH.search(line)
+                    if m:
+                        rarity_key = (m.group(1) or "").upper()
+                        fish = m.group(2).strip()
+                        r = RARITY_MAP.get(rarity_key, 5)
+                        self.gui_debug(f"[FISH] {fish} | Rarity {r}")
+                        self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
 
-                    match = PATTERN_NEW_ENTRY.search(line)
-                    if match:
-                        full = match.group(1).strip().split(" ", 1)
-                        word = full[0].upper()
-                        fish_name = full[1] if len(full) > 1 else match.group(1).strip()
-                        rarity = NEW_ENTRY_RARITY.get(word, 5)
-                        self.send_to_endpoint("fish", {"fish": fish_name, "rarity": rarity})
+                    m = PATTERN_NEW_ENTRY.search(line)
+                    if m:
+                        parts = m.group(1).split(" ", 1)
+                        r = NEW_ENTRY_RARITY.get(parts[0].upper(), 5)
+                        fish = parts[1] if len(parts) > 1 else m.group(1)
+                        self.gui_debug(f"[NEW ENTRY] {fish} | Rarity {r}")
+                        self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
 
-                    match = PATTERN_CRAB.search(line)
-                    if match:
+                    if PATTERN_CRAB.search(line):
+                        self.gui_debug("[CRAB] Crab caught")
                         self.send_to_endpoint("crab", {"fish": "crab"})
 
         except FileNotFoundError:
-            self.status_var.set("Status: Log file not found.")
-            messagebox.showerror("Error", f"Log file not found:\n{LOG_PATH}")
+            messagebox.showerror("Error", f"Log not found:\n{path}")
+            self.gui_debug(f"[ERROR] Log not found: {path}")
         except Exception as e:
-            self.status_var.set("Status: Error")
-            messagebox.showerror("Error", f"Unexpected error:\n{e}")
+            messagebox.showerror("Error", str(e))
+            self.gui_debug(f"[ERROR] {e}")
 
 
 if __name__ == "__main__":
