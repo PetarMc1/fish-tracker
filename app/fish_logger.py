@@ -4,7 +4,7 @@ import time
 import json
 import threading
 import tkinter as tk
-from tkinter import font, messagebox, scrolledtext, Toplevel, Label
+from tkinter import font, messagebox, scrolledtext, Toplevel, Label, filedialog
 from cryptography.fernet import Fernet
 import requests
 import sys
@@ -12,6 +12,7 @@ import sys
 USER_HOME = os.path.expanduser("~")
 LUNAR_LOG = os.path.join(USER_HOME, ".lunarclient", "profiles", "lunar", "1.21", "logs", "latest.log")
 FEATHER_LOG = os.path.join(USER_HOME, "AppData", "Roaming", ".minecraft", "feather", "logs", "latest.log")
+MINECRAFT_LOG = os.path.join(USER_HOME, "AppData", "Roaming", ".minecraft", "logs", "latest.log")
 
 PATTERN_FISH = re.compile(
     r"(EPIC|GREAT|NICE|GOOD|LEGENDARY|INSANE)? ?CATCH! (?:Your Augments caught|You caught) (?:a|an) ([^!]+?)(?: with a length of [\d.]+cm)?[.!]",
@@ -29,7 +30,7 @@ class FishMonitorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Fish & Crab Monitor")
-        self.root.geometry("700x600")
+        self.root.geometry("770x700")
         self.root.configure(bg="#121212")
         self.monitoring = False
         self.fernet = None
@@ -77,7 +78,17 @@ class FishMonitorApp:
                        bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
         tk.Radiobutton(log_frame, text="Feather Client", variable=self.log_source, value="feather",
                        bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
-        self.log_display = tk.Label(log_frame, text="", font=self.body_font, bg="#121212", fg="#E0E0E0", wraplength=650)
+        tk.Radiobutton(log_frame, text="Minecraft Launcher", variable=self.log_source, value="minecraft",
+                       bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
+        tk.Radiobutton(log_frame, text="Custom Log", variable=self.log_source, value="custom",
+                       bg="#121212", fg="white", selectcolor="#1B1B1B", font=self.body_font).pack(anchor="w", padx=10, pady=2)
+        self.custom_log_frame = tk.Frame(log_frame, bg="#121212")
+        self.custom_log_frame.pack(fill="x", padx=20, pady=2)
+        self.custom_log_entry = tk.Entry(self.custom_log_frame, font=self.body_font)
+        self.custom_log_entry.pack(side="left", fill="x", expand=True)
+        tk.Button(self.custom_log_frame, text="Browse", bg="#555555", fg="white", font=self.body_font,
+                  command=self.browse_custom_log).pack(side="left", padx=5)
+        self.log_display = tk.Label(log_frame, text="", font=self.body_font, bg="#121212", fg="#E0E0E0", wraplength=700)
         self.log_display.pack(padx=10, pady=5)
         self.update_log_path_label()
         options_frame = tk.Frame(self.root, bg="#121212")
@@ -100,6 +111,15 @@ class FishMonitorApp:
         self.debug_text.pack(fill="both", expand=True, padx=5, pady=5)
         self.debug_text.config(state="disabled")
 
+    def browse_custom_log(self):
+        path = filedialog.askopenfilename(title="Select Log File", filetypes=[("Log Files", "*.log"), ("All Files", "*.*")])
+        if path:
+            self.custom_log_entry.delete(0, tk.END)
+            self.custom_log_entry.insert(0, path)
+            self.current_log_path = path
+            self.update_log_path_label()
+            self.gui_debug(f"[DEBUG] Custom log set to: {self.current_log_path}")
+
     def show_remember_help(self):
         win = Toplevel(self.root)
         win.title("Remember Credentials Info")
@@ -117,7 +137,16 @@ class FishMonitorApp:
             self.debug_frame.pack_forget()
 
     def change_log_source(self, *args):
-        self.current_log_path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
+        if self.log_source.get() == "lunar":
+            self.current_log_path = LUNAR_LOG
+        elif self.log_source.get() == "feather":
+            self.current_log_path = FEATHER_LOG
+        elif self.log_source.get() == "minecraft":
+            self.current_log_path = MINECRAFT_LOG
+        elif self.log_source.get() == "custom":
+            path = self.custom_log_entry.get().strip()
+            if path:
+                self.current_log_path = path
         self.update_log_path_label()
         self.gui_debug(f"[DEBUG] Log source switched to: {self.current_log_path}")
         if self.monitoring:
@@ -143,6 +172,9 @@ class FishMonitorApp:
                     self.log_source.set(cfg.get("log_source","lunar"))
                     self.debug.set(cfg.get("debug", True))
                     self.remember_credentials.set(bool(cfg.get("user_id") and cfg.get("api_key")))
+                    self.current_log_path = cfg.get("custom_log", self.current_log_path)
+                    if self.log_source.get() == "custom":
+                        self.custom_log_entry.insert(0, self.current_log_path)
             except: pass
 
     def save_config(self):
@@ -153,6 +185,8 @@ class FishMonitorApp:
                 "debug": self.debug.get(),
                 "log_source": self.log_source.get()
             }
+            if self.log_source.get() == "custom":
+                cfg["custom_log"] = self.current_log_path
             try:
                 with open(CONFIG_FILE, "w", encoding="utf-8") as f:
                     json.dump(cfg, f, indent=2)
@@ -164,7 +198,7 @@ class FishMonitorApp:
 
     def fetch_fernet_key(self, user_id, password):
         try:
-            url = f"http://localhost:10000/get/user/key?id={user_id}&password={password}"
+            url = f"https://api.tracker.458011.xyz/get/user/key?id={user_id}&password={password}"
             resp = requests.get(url, headers={"x-api-key": self.api_key})
             self.gui_debug(f"[GET] {url} | Status {resp.status_code}")
             fk = resp.json().get("fernetKey")
@@ -205,7 +239,7 @@ class FishMonitorApp:
     def send_to_endpoint(self, path, data):
         try:
             encrypted = self.fernet.encrypt(json.dumps(data).encode())
-            url = f"http://localhost:10000/post/{path}?id={self.user_id}"
+            url = f"https://api.tracker.458011.xyz/post/{path}?id={self.user_id}"
             r = requests.post(url, data=encrypted, headers={"x-api-key": self.api_key})
             self.gui_debug(f"[POST] {url} → {data} | Status {r.status_code}")
         except Exception as e:
