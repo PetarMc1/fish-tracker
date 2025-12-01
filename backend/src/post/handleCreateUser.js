@@ -12,7 +12,7 @@ const CREATE_USER_API_KEY = process.env.CREATE_USER_API_KEY;
 async function handleCreateUser(req, res) {
   try {
     const { name, password } = req.body;
-    const apiKey = req.headers["x-api-key"];
+    const apiKey = req.headers["x-create-key"];
     let userPassword = password;
 
     if (!name) {
