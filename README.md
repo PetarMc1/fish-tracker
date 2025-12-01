@@ -16,7 +16,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - [ ] Feather Client
   - [ ] Official Minecraft Launcher
   - [ ] Custom Client Support
-- [ ] Add rate limiting to API endpoints
+- [X] Add rate limiting to API endpoints
 - [ ] Add username + password authentication to frontend
 - [ ] Dockerize backend
 - [ ] Dockerize frontend 
