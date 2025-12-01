@@ -55,7 +55,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
 | 3    | Gold                     | `GREAT CATCH!`, `NEW ENTRY! You caught a GOLD <Fish>`                  | Above average / mid-tier new fish |
 | 2    | Silver                   | `NICE CATCH!`, `NEW ENTRY! You caught a SILVER <Fish>`                 | Uncommon / low-mid new fish       |
 | 1    | Bronze                   | `GOOD CATCH!`, `NEW ENTRY! You caught a BRONZE <Fish>`                 | Common / basic new fish           |
-| 5    | Default (no tag/unknown) | `You caught a <Fish>`, `NEW ENTRY! You caught a <Fish>` (unknown tier) | Normal catch or unknown rarity    |
+| 5    | Default (no tag/unknown) | `You caught a <Fish>`, `NEW ENTRY! You caught a <Fish>` (unknown tier) | Unknown rarity                    |
 
 Rarity is set as a number to save database space and make it easier and faster to process.
 
