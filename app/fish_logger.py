@@ -10,7 +10,7 @@ from cryptography.fernet import Fernet
 
 USER_HOME = os.path.expanduser("~")
 
-LUNAR_LOG = os.path.join(USER_HOME, ".lunarclient", "offline", "multiver", "logs", "latest.log")
+LUNAR_LOG = os.path.join(USER_HOME, ".lunarclient", "profiles", "lunar", "1.21", "logs", "latest.log")
 FEATHER_LOG = os.path.join(USER_HOME, "AppData", "Roaming", ".minecraft", "feather", "logs", "latest.log")
 
 PATTERN_FISH = re.compile(
@@ -34,16 +34,18 @@ class FishMonitorApp:
         self.monitoring = False
         self.fernet = None
         self.api_key = None
-        self.debug = tk.BooleanVar(value=True)  # debug ON by default
+        self.debug = tk.BooleanVar(value=True)
         self.log_source = tk.StringVar(value="lunar")
+        self.current_log_path = LUNAR_LOG  # dynamically change when log_source changes
 
         self.status_var = tk.StringVar(value="Status: Idle")
 
         self._init_fonts()
         self._build_ui()
 
-        # Trace debug variable to toggle debug logging and visibility
+        # Trace debug and log_source
         self.debug.trace_add("write", self.toggle_debug_mode)
+        self.log_source.trace_add("write", self.change_log_source)
 
     def _init_fonts(self):
         self.header_font = font.Font(family="Segoe UI", size=16, weight="bold")
@@ -51,7 +53,6 @@ class FishMonitorApp:
         self.status_font = font.Font(family="Segoe UI", size=12, slant="italic")
 
     def _build_ui(self):
-
         tk.Label(self.root, text="Fish & Crab Monitor", font=self.header_font, bg="#121212", fg="#E0E0E0").pack(pady=(10,10))
 
         login_frame = tk.Frame(self.root, bg="#121212")
@@ -77,7 +78,6 @@ class FishMonitorApp:
         self.log_display = tk.Label(log_frame, text="", font=self.body_font, bg="#121212", fg="#E0E0E0", wraplength=650)
         self.log_display.pack(padx=10, pady=5)
         self.update_log_path_label()
-        self.log_source.trace("w", lambda *_: self.update_log_path_label())
 
         options_frame = tk.Frame(self.root, bg="#121212")
         options_frame.pack(fill="x", padx=20, pady=5)
@@ -95,10 +95,9 @@ class FishMonitorApp:
 
         tk.Label(self.root, textvariable=self.status_var, font=self.status_font, bg="#121212", fg="#E0E0E0").pack(pady=5)
 
-        # Debug frame
         debug_frame = tk.LabelFrame(self.root, text="Debug Log", font=self.body_font, bg="#121212", fg="#E0E0E0")
         debug_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        self.debug_frame = debug_frame  # store reference for toggling
+        self.debug_frame = debug_frame
 
         self.debug_text = scrolledtext.ScrolledText(debug_frame, font=("Consolas", 10), bg="#1B1B1B", fg="#E0E0E0")
         self.debug_text.pack(fill="both", expand=True, padx=5, pady=5)
@@ -106,19 +105,22 @@ class FishMonitorApp:
 
     def toggle_debug_mode(self, *args):
         if self.debug.get():
-            # Show debug panel
             self.debug_frame.pack(fill="both", expand=True, padx=20, pady=10)
             self.gui_debug("[DEBUG] Debug mode enabled.")
         else:
-            # Hide debug panel and clear text
             self.debug_text.config(state="normal")
             self.debug_text.delete(1.0, tk.END)
             self.debug_text.config(state="disabled")
             self.debug_frame.pack_forget()
 
+    def change_log_source(self, *args):
+        new_path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
+        self.current_log_path = new_path
+        self.update_log_path_label()
+        self.gui_debug(f"[DEBUG] Log source switched to: {new_path}")
+
     def update_log_path_label(self):
-        path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
-        self.log_display.config(text=f"Log Path:\n{path}")
+        self.log_display.config(text=f"Log Path:\n{self.current_log_path}")
 
     def gui_debug(self, message):
         if self.debug.get():
@@ -129,7 +131,7 @@ class FishMonitorApp:
 
     def fetch_fernet_key(self, user_id, password):
         try:
-            url = f"https://api.tracker.458011.xyz/get/user/key?id={user_id}&password={password}"
+            url = f"http://localhost:10000/get/user/key?id={user_id}&password={password}"
             resp = requests.get(url, headers={"x-api-key": self.api_key})
             self.gui_debug(f"[GET] {url} | Status {resp.status_code}")
             fk = resp.json().get("fernetKey")
@@ -169,48 +171,57 @@ class FishMonitorApp:
     def send_to_endpoint(self, path, data):
         try:
             encrypted = self.fernet.encrypt(json.dumps(data).encode())
-            url = f"https://api.tracker.458011.xyz/post/{path}?id={self.user_id}"
+            url = f"http://localhost:10000/post/{path}?id={self.user_id}"
             r = requests.post(url, data=encrypted, headers={"x-api-key": self.api_key})
             self.gui_debug(f"[POST] {url} → {data} | Status {r.status_code}")
         except Exception as e:
             self.gui_debug(f"[ERROR] Send Failed: {e}")
 
     def monitor_log(self):
-        path = LUNAR_LOG if self.log_source.get() == "lunar" else FEATHER_LOG
-        self.gui_debug(f"[DEBUG] Watching log: {path}")
+        current_path = self.current_log_path
+        f = None
         try:
-            with open(path, "r", encoding="utf-8") as f:
-                f.seek(0, 2)
-                while self.monitoring:
-                    line = f.readline()
-                    if not line: time.sleep(0.1); continue
+            while self.monitoring:
+                if self.current_log_path != current_path or f is None:
+                    current_path = self.current_log_path
+                    if f: f.close()
+                    f = open(current_path, "r", encoding="utf-8")
+                    f.seek(0, 2)
+                    self.gui_debug(f"[DEBUG] Watching log: {current_path}")
 
-                    m = PATTERN_FISH.search(line)
-                    if m:
-                        rarity_key = (m.group(1) or "").upper()
-                        fish = m.group(2).strip()
-                        r = RARITY_MAP.get(rarity_key, 5)
-                        self.gui_debug(f"[FISH] {fish} | Rarity {r}")
-                        self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
+                line = f.readline()
+                if not line: 
+                    time.sleep(0.1)
+                    continue
 
-                    m = PATTERN_NEW_ENTRY.search(line)
-                    if m:
-                        parts = m.group(1).split(" ", 1)
-                        r = NEW_ENTRY_RARITY.get(parts[0].upper(), 5)
-                        fish = parts[1] if len(parts) > 1 else m.group(1)
-                        self.gui_debug(f"[NEW ENTRY] {fish} | Rarity {r}")
-                        self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
+                m = PATTERN_FISH.search(line)
+                if m:
+                    rarity_key = (m.group(1) or "").upper()
+                    fish = m.group(2).strip()
+                    r = RARITY_MAP.get(rarity_key, 5)
+                    self.gui_debug(f"[FISH] {fish} | Rarity {r}")
+                    self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
 
-                    if PATTERN_CRAB.search(line):
-                        self.gui_debug("[CRAB] Crab caught")
-                        self.send_to_endpoint("crab", {"fish": "crab"})
+                m = PATTERN_NEW_ENTRY.search(line)
+                if m:
+                    parts = m.group(1).split(" ", 1)
+                    r = NEW_ENTRY_RARITY.get(parts[0].upper(), 5)
+                    fish = parts[1] if len(parts) > 1 else m.group(1)
+                    self.gui_debug(f"[NEW ENTRY] {fish} | Rarity {r}")
+                    self.send_to_endpoint("fish", {"fish": fish, "rarity": r})
+
+                if PATTERN_CRAB.search(line):
+                    self.gui_debug("[CRAB] Crab caught")
+                    self.send_to_endpoint("crab", {"fish": "crab"})
 
         except FileNotFoundError:
-            messagebox.showerror("Error", f"Log not found:\n{path}")
-            self.gui_debug(f"[ERROR] Log not found: {path}")
+            messagebox.showerror("Error", f"Log not found:\n{current_path}")
+            self.gui_debug(f"[ERROR] Log not found: {current_path}")
         except Exception as e:
             messagebox.showerror("Error", str(e))
             self.gui_debug(f"[ERROR] {e}")
+        finally:
+            if f: f.close()
 
 
 if __name__ == "__main__":
