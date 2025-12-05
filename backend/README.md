@@ -77,8 +77,8 @@ node index.js
 Default port is 10000. The server runs on http://0.0.0.0:10000.
 
 ## API Endpoints
-[!WARNING]
-All API requests must have the `x-api-key` header with a value same as the one set for the `FRONTEND_API_KEY` value or there will be a request limit on the API
+> [!WARNING]
+> All API requests must have the `x-api-key` header with a value same as the one set for the `FRONTEND_API_KEY` value or there will be a request limit on the API
 
 ### Create New User
 
