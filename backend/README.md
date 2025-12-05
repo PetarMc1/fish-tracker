@@ -9,6 +9,45 @@ A secure REST API for encrypted storage and retrieval of submitted **fish** and 
 
 - The API recieves encrypted data then decrypts it and puts into a database.
 
+## Docker Deployment
+
+### Docker Compose (Recommended)
+Create `docker-compose.yml`:
+```yml
+version: "3.9"
+
+services:
+  fish-tracker:
+    image: petarmc/fish-tracker
+    ports:
+      - "10000:10000"
+    environment:
+      MONGO_URI: "mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb"
+      CREATE_USER_API_KEY: "create-user-api-key"
+      RANDOM_ORG_API_KEY: "random-org-api-key"
+      FRONTEND_API_KEY: "frontend-api-key"
+    restart: unless-stopped
+
+```
+Then start the service:
+```bash
+docker compose up -d
+```
+
+### Docker Run Command 
+```bash
+docker run -d \
+  --name fish-tracker \
+  -p 10000:10000 \
+  -e MONGO_URI="mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb" \
+  -e CREATE_USER_API_KEY="create-user-api-key" \
+  -e RANDOM_ORG_API_KEY="random-org-api-key" \
+  -e FRONTEND_API_KEY="frontend-api-key" \
+  petarmc/fish-tracker
+```
+
+
+
 ## Installation (For local use)
 
 You can selfhost the API if you dont want to use my instance.
@@ -38,6 +77,8 @@ node index.js
 Default port is 10000. The server runs on http://0.0.0.0:10000.
 
 ## API Endpoints
+[!WARNING]
+All API requests must have the `x-api-key` header with a value same as the one set for the `FRONTEND_API_KEY` value or there will be a request limit on the API
 
 ### Create New User
 
@@ -47,7 +88,7 @@ Creates a new user with a unique ID and Fernet encryption key.
 #### Required Headers:
 
 ```
-x-api-key: <CREATE_USER_API_KEY>
+x-create-key: <CREATE_USER_API_KEY>
 ```
 
 #### Body:

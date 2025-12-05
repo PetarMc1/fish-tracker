@@ -18,7 +18,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - [X] Custom Client Support
 - [X] Add rate limiting to API endpoints
 - [ ] Add username + password authentication to frontend
-- [ ] Dockerize backend
+- [X] Dockerize backend
 - [ ] Dockerize frontend 
 
 ## App (Desktop Logger)
