@@ -3,6 +3,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 
+const { getStatus } = require("./get/getStatus");
 const { handleFish } = require("./post/handleUserFish");
 const { handleUserCrabs } = require("./post/handleUserCrabs");
 const { getUserFish } = require("./get/getUserFish");
@@ -49,6 +50,7 @@ app.get("/get/crab", getUserCrabs);
 app.post("/create/new/user", handleCreateUser);
 app.get("/demo/fish", getDemoFish);
 app.get("/demo/crab", getDemoCrabs);
+app.get("/status", getStatus);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
