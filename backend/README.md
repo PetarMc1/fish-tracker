@@ -18,7 +18,7 @@ version: "3.9"
 
 services:
   fish-tracker:
-    image: petarmc/fish-tracker
+    image: petarmc/fish-tracker:backend
     ports:
       - "10000:10000"
     environment:
@@ -43,7 +43,7 @@ docker run -d \
   -e CREATE_USER_API_KEY="create-user-api-key" \
   -e RANDOM_ORG_API_KEY="random-org-api-key" \
   -e FRONTEND_API_KEY="frontend-api-key" \
-  petarmc/fish-tracker
+  petarmc/fish-tracker:backend
 ```
 
 
