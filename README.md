@@ -17,7 +17,6 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - [X] Official Minecraft Launcher
   - [X] Custom Client Support
 - [X] Add rate limiting to API endpoints
-- [ ] Add username + password authentication to frontend
 - [X] Dockerize backend
 - [ ] Dockerize frontend 
 
