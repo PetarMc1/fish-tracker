@@ -5,6 +5,7 @@ A web application to track, visualize, and sort your fish and crab catches on th
 
 ## Table of Contents
 
+- [Docker Deployment](#docker-deployment)
 - [Features](#features)  
 - [Demo](#demo)  
 - [Installation](#installation)  
@@ -12,6 +13,30 @@ A web application to track, visualize, and sort your fish and crab catches on th
 - [Pages](#pages)  
 - [Technologies](#technologies)  
 - [License](#license)  
+
+## Docker Deployment
+> [!WARNING]
+> Due to the frontend being updated not frequently its under the `frontend` tag
+
+### Docker Compose (Reccomended)
+```yaml
+version: "3.9"
+
+services:
+  frontend:
+    image: petarmc/fish-tracker:frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+```
+### Docker Run Command
+```bash
+docker run -d \
+  -p 3000:3000 \
+  --restart unless-stopped \
+  petarmc/fish-tracker:frontend
+
+```
 
 
 ## Features

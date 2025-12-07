@@ -18,7 +18,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - [X] Custom Client Support
 - [X] Add rate limiting to API endpoints
 - [X] Dockerize backend
-- [ ] Dockerize frontend 
+- [X] Dockerize frontend 
 
 ## App (Desktop Logger)
 
@@ -30,6 +30,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
 
 ## API (Backend)
 
+- [Deployable with Docker](/backend/README.md#docker-deployment)
 - Built using **Node.js**, **Express**, and **MongoDB**.
 - Securely receives encrypted data and decrypts it on the server.
 - Stores catch logs per user for later retrieval.
@@ -41,6 +42,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
 
 ## Frontend (Viewer)
 
+- [Deployable with Docker](/frontend/README.md#docker-deployment)
 - Built with **Next.js** and **TailwindCSS**.
 - Real-time visualization of fish-catching data.
 - Features:
