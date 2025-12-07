@@ -15,8 +15,6 @@ A web application to track, visualize, and sort your fish and crab catches on th
 - [License](#license)  
 
 ## Docker Deployment
-> [!WARNING]
-> Due to the frontend being updated not frequently its under the `frontend` tag
 
 ### Docker Compose (Reccomended)
 ```yaml
