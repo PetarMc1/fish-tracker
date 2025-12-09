@@ -50,7 +50,6 @@ function getCookie(name: string) {
 export default function StatsPage() {
   const router = useRouter();
 
-  const [userId, setUserId] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [fishCounts, setFishCounts] = useState<Record<string, number>>({});
   const [fishRarities, setFishRarities] = useState<Record<string, string>>({});
@@ -68,32 +67,25 @@ export default function StatsPage() {
   const [showStats, setShowStats] = useState(false);
 
   useEffect(() => {
-    const idFromCookie = getCookie("fishUserId");
-    if (!idFromCookie) {
+    const nameFromCookie = getCookie("fishUsername");
+    if (!nameFromCookie) {
       router.replace("/login");
       return;
     }
-    setUserId(idFromCookie);
+    setUsername(nameFromCookie);
   }, [router]);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!username) return;
 
     const fetchFishData = async () => {
       try {
         setLoading(true);
         const fishRes = await fetch(
-          `https://api.tracker.458011.xyz/get/fish?id=${userId}`
+          `https://api.tracker.petarmc.com/get/fish?name=${username}`
         );
         const fishData = await fishRes.json();
         if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
-
-        // Capitalize first letter of username from API response
-        setUsername(
-          fishData.user
-            ? fishData.user.charAt(0).toUpperCase() + fishData.user.slice(1)
-            : null
-        );
 
         const counts: Record<string, number> = {};
         const rarities: Record<string, string> = {};
@@ -117,7 +109,7 @@ export default function StatsPage() {
       try {
         setCrabLoading(true);
         const crabRes = await fetch(
-          `https://api.tracker.458011.xyz/get/crab?id=${userId}`
+          `https://api.tracker.petarmc.com/get/crab?name=${username}`
         );
         const crabData = await crabRes.json();
         if (!Array.isArray(crabData.crabs))
@@ -133,7 +125,7 @@ export default function StatsPage() {
 
     fetchFishData();
     fetchCrabData();
-  }, [userId]);
+  }, [username]);
 
   const getFishImage = (rarity: string) => {
     switch (rarity.toLowerCase()) {
@@ -193,7 +185,7 @@ export default function StatsPage() {
     return acc;
   }, {});
 
-  if (!userId) {
+  if (!username) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white p-4 font-sans">
         <p className="text-lg text-neutral-400">Redirecting to login...</p>
@@ -352,7 +344,6 @@ export default function StatsPage() {
             )}
           </motion.div>
 
-          {/* Fish Cards */}
           {fishList.map(([name, count]) => {
             const rarity = fishRarities[name]?.toLowerCase() || "unknown/other";
             return (

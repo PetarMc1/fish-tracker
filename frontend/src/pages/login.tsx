@@ -6,16 +6,17 @@ import Cookies from "js-cookie";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
-  const [id, setId] = useState("");
+  const [username, setUsername] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!id.trim()) return;
+    if (!username.trim()) return;
 
-    Cookies.set("fishUserId", id.trim(), { expires: rememberMe ? 365 : undefined });
+    Cookies.set("fishUsername", username.trim(), { expires: rememberMe ? 365 : undefined });
     window.dispatchEvent(new Event("storage"));
+
     router.push("/stats");
   };
 
@@ -28,15 +29,13 @@ export default function LoginPage() {
         transition={{ duration: 0.7 }}
         className="bg-neutral-800 p-8 rounded-2xl shadow-xl w-full max-w-md text-center space-y-6"
       >
-        <h1 className="text-4xl font-bold">
-          Enter Access ID
-        </h1>
+        <h1 className="text-4xl font-bold">Enter Username</h1>
 
         <input
           type="text"
-          placeholder="Enter ID..."
-          value={id}
-          onChange={(e) => setId(e.target.value)}
+          placeholder="Enter Name..."
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-4 py-3 text-base placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
 
