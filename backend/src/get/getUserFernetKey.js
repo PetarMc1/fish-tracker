@@ -15,12 +15,12 @@ async function getUserFernetKey(req, res) {
   }
 
   const url = new URL(req.url, `https://${req.headers.host}`);
-  const userId = url.searchParams.get("id");
+  const userName = url.searchParams.get("name"); // changed from id → name
   const password = url.searchParams.get("password");
 
-  if (!userId || !password) {
+  if (!userName || !password) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Missing user ID or password in query params" }));
+    res.end(JSON.stringify({ error: "Missing user name or password in query params" }));
     return;
   }
 
@@ -31,14 +31,14 @@ async function getUserFernetKey(req, res) {
     const db = client.db("core_users_data");
     const usersCol = db.collection("users");
 
-    const user = await usersCol.findOne({ id: userId, userPassword: password });
+    const user = await usersCol.findOne({ name: userName, userPassword: password });
 
     if (!user || !user.fernetKey) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "User not found or invalid password" }));
       return;
     }
-    
+
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ fernetKey: user.fernetKey }));
   } catch (err) {

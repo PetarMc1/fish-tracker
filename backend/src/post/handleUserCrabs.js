@@ -6,7 +6,6 @@ const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in your environment variables");
 
 async function handleUserCrabs(req, res) {
-
   if (req.method !== "POST") {
     res.writeHead(405, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Method not allowed" }));
@@ -21,14 +20,11 @@ async function handleUserCrabs(req, res) {
     return;
   }
 
-  const userId = new URL(
-    req.url,
-    `http://${req.headers.host}`
-  ).searchParams.get("id");
+  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name"); // changed from id → name
 
-  if (!userId) {
+  if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Missing user ID in query params" }));
+    res.end(JSON.stringify({ error: "Missing user name in query params" }));
     return;
   }
 
@@ -51,7 +47,7 @@ async function handleUserCrabs(req, res) {
 
       const coreDb = client.db("core_users_data");
       const usersCol = coreDb.collection("users");
-      const user = await usersCol.findOne({ id: userId });
+      const user = await usersCol.findOne({ name: userName });
 
       if (!user || !user.name || !user.fernetKey) {
         res.writeHead(404, { "Content-Type": "application/json" });

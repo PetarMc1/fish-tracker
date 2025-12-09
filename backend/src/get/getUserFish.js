@@ -30,10 +30,10 @@ async function getUserFish(req, res) {
   }
 
   const url = new URL(req.url, `https://${req.headers.host}`);
-  const userId = url.searchParams.get("id");
-  if (!userId) {
+  const userName = url.searchParams.get("name"); // changed from 'id' to 'name'
+  if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Missing user ID in query params" }));
+    res.end(JSON.stringify({ error: "Missing user name in query params" }));
     return;
   }
 
@@ -42,8 +42,9 @@ async function getUserFish(req, res) {
     const coreDb = client.db("core_users_data");
     const fishDb = client.db("user_data_fish");
 
-    const user = await coreDb.collection("users").findOne({ id: userId });
-    if (!user || !user.name) {
+
+    const user = await coreDb.collection("users").findOne({ name: userName });
+    if (!user) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "User not found" }));
       return;

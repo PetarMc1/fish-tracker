@@ -13,14 +13,12 @@ async function getUserCrabs(req, res) {
     return;
   }
 
-  const userId = new URL(
-    req.url,
-    `http://${req.headers.host}`
-  ).searchParams.get("id");
+  // Get the 'name' query parameter instead of 'id'
+  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
 
-  if (!userId) {
+  if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Missing user ID in query params" }));
+    res.end(JSON.stringify({ error: "Missing user name in query params" }));
     return;
   }
 
@@ -31,9 +29,11 @@ async function getUserCrabs(req, res) {
 
     const coreDb = client.db("core_users_data");
     const usersCol = coreDb.collection("users");
-    const user = await usersCol.findOne({ id: userId });
 
-    if (!user || !user.name) {
+ 
+    const user = await usersCol.findOne({ name: userName });
+
+    if (!user) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "User not found" }));
       return;
