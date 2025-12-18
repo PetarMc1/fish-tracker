@@ -24,7 +24,8 @@ async function handleFish(req, res) {
     return;
   }
 
-  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name"); // changed from id → name
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+  const userName = parsedUrl.searchParams.get("name");
   const gamemodeHeader = req.headers["x-gamemode"];
   const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
     ? gamemodeHeader
