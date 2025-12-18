@@ -4,6 +4,8 @@ const { MongoClient } = require("mongodb");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in environment");
 
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+
 async function getUserCrabs(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -13,8 +15,13 @@ async function getUserCrabs(req, res) {
     return;
   }
 
-  // Get the 'name' query parameter instead of 'id'
   const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
+  const gamemode = url.searchParams.get("gamemode");
+  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
+    return;
+  }
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -39,7 +46,8 @@ async function getUserCrabs(req, res) {
       return;
     }
 
-    const crabDb = client.db("user_data_crab");
+    const crabDbName = `user_data_crab${gamemode ? `_${gamemode}` : ""}`;
+    const crabDb = client.db(crabDbName);
     const crabCollection = crabDb.collection(user.name);
 
     const crabDocs = await crabCollection
