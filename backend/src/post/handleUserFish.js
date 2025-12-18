@@ -7,6 +7,8 @@ if (!uri) {
   throw new Error("MONGO_URI is not set in your environment variables.");
 }
 
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+
 async function handleFish(req, res) {
   if (req.method !== "POST") {
     res.writeHead(405, { "Content-Type": "application/json" });
@@ -23,6 +25,16 @@ async function handleFish(req, res) {
   }
 
   const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name"); // changed from id → name
+  const gamemodeHeader = req.headers["x-gamemode"];
+  const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
+    ? gamemodeHeader
+    : parsedUrl.searchParams.get("gamemode");
+
+  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
+    return;
+  }
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -45,7 +57,7 @@ async function handleFish(req, res) {
       const coreDb = client.db("core_users_data");
       const usersCollection = coreDb.collection("users");
 
-      // query by name instead of id
+
       const user = await usersCollection.findOne({ name: userName });
 
       if (!user) {
@@ -104,7 +116,8 @@ async function handleFish(req, res) {
         return;
       }
       
-      const userDataDb = client.db("user_data_fish");
+      const userDataDbName = `user_data_fish${gamemode ? `_${gamemode}` : ""}`;
+      const userDataDb = client.db(userDataDbName);
       const fishCollection = userDataDb.collection(user.name);
 
       const result = await fishCollection.insertOne(data);

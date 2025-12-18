@@ -4,6 +4,8 @@ const { MongoClient } = require("mongodb");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in environment");
 
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+
 const client = new MongoClient(uri);
 const clientPromise = client.connect();
 
@@ -21,16 +23,19 @@ function mapRarity(rarity) {
 
 async function getUserFish(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=70, stale-while-revalidate=5");
-
   if (req.method !== "GET") {
     res.writeHead(405, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Method not allowed" }));
     return;
   }
+  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
+  const gamemode = url.searchParams.get("gamemode");
 
-  const url = new URL(req.url, `https://${req.headers.host}`);
-  const userName = url.searchParams.get("name"); // changed from 'id' to 'name'
+  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
+    return;
+  }
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Missing user name in query params" }));
@@ -40,7 +45,8 @@ async function getUserFish(req, res) {
   try {
     await clientPromise;
     const coreDb = client.db("core_users_data");
-    const fishDb = client.db("user_data_fish");
+    const fishDbName = `user_data_fish${gamemode ? `_${gamemode}` : ""}`;
+    const fishDb = client.db(fishDbName);
 
 
     const user = await coreDb.collection("users").findOne({ name: userName });
