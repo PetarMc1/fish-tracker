@@ -31,21 +31,28 @@ async function getUserFish(req, res) {
   const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
   const gamemode = url.searchParams.get("gamemode");
 
-  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Invalid gamemode" }));
-    return;
-  }
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Missing user name in query params" }));
     return;
   }
 
+  if (!gamemode) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Missing gamemode parameter" }));
+    return;
+  }
+
+  if (!VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
+    return;
+  }
+
   try {
     await clientPromise;
     const coreDb = client.db("core_users_data");
-    const fishDbName = `user_data_fish${gamemode ? `_${gamemode}` : ""}`;
+    const fishDbName = `user_data_fish_${gamemode}`;
     const fishDb = client.db(fishDbName);
 
 
