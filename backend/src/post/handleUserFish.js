@@ -30,15 +30,21 @@ async function handleFish(req, res) {
     ? gamemodeHeader
     : parsedUrl.searchParams.get("gamemode");
 
-  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Invalid gamemode" }));
-    return;
-  }
-
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Missing user name in query params" }));
+    return;
+  }
+
+  if (!gamemode) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Missing gamemode parameter" }));
+    return;
+  }
+
+  if (!VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
     return;
   }
 
@@ -116,7 +122,7 @@ async function handleFish(req, res) {
         return;
       }
       
-      const userDataDbName = `user_data_fish${gamemode ? `_${gamemode}` : ""}`;
+      const userDataDbName = `user_data_fish_${gamemode}`;
       const userDataDb = client.db(userDataDbName);
       const fishCollection = userDataDb.collection(user.name);
 

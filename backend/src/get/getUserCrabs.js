@@ -17,15 +17,22 @@ async function getUserCrabs(req, res) {
 
   const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
   const gamemode = url.searchParams.get("gamemode");
-  if (gamemode && !VALID_GAMEMODES.includes(gamemode)) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Invalid gamemode" }));
-    return;
-  }
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Missing user name in query params" }));
+    return;
+  }
+
+  if (!gamemode) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Missing gamemode parameter" }));
+    return;
+  }
+
+  if (!VALID_GAMEMODES.includes(gamemode)) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: "Invalid gamemode" }));
     return;
   }
 
@@ -46,7 +53,7 @@ async function getUserCrabs(req, res) {
       return;
     }
 
-    const crabDbName = `user_data_crab${gamemode ? `_${gamemode}` : ""}`;
+    const crabDbName = `user_data_crab_${gamemode}`;
     const crabDb = client.db(crabDbName);
     const crabCollection = crabDb.collection(user.name);
 
