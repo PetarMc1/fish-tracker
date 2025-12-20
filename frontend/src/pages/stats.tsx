@@ -66,6 +66,8 @@ export default function StatsPage() {
   const [asc, setAsc] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [gamemode, setGamemode] = useState("earth");
+  const [fishMessage, setFishMessage] = useState<string | null>(null);
+  const [crabMessage, setCrabMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const nameFromCookie = getCookie("fishUsername");
@@ -86,21 +88,31 @@ export default function StatsPage() {
           `http://localhost:10000/get/fish?name=${username}&gamemode=${gamemode}`
         );
         const fishData = await fishRes.json();
-        if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
+        if (fishData.message) {
+          setFishCounts({});
+          setFishRarities({});
+          setTotalFishCaught(0);
+          setFishMessage(fishData.message);
+          setError(null);
+        } else {
+          if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
 
-        const counts: Record<string, number> = {};
-        const rarities: Record<string, string> = {};
-        fishData.fish.forEach((entry: FishEntry) => {
-          counts[entry.name] = (counts[entry.name] || 0) + 1;
-          rarities[entry.name] = entry.rarity;
-        });
+          const counts: Record<string, number> = {};
+          const rarities: Record<string, string> = {};
+          fishData.fish.forEach((entry: FishEntry) => {
+            counts[entry.name] = (counts[entry.name] || 0) + 1;
+            rarities[entry.name] = entry.rarity;
+          });
 
-        setFishCounts(counts);
-        setFishRarities(rarities);
-        setTotalFishCaught(fishData.fish.length);
-        setError(null);
+          setFishCounts(counts);
+          setFishRarities(rarities);
+          setTotalFishCaught(fishData.fish.length);
+          setFishMessage(null);
+          setError(null);
+        }
       } catch (e: any) {
         setError(e.message || "Unknown error");
+        setFishMessage(null);
       } finally {
         setLoading(false);
       }
@@ -113,12 +125,20 @@ export default function StatsPage() {
           `http://localhost:10000/get/crab?name=${username}&gamemode=${gamemode}`
         );
         const crabData = await crabRes.json();
-        if (!Array.isArray(crabData.crabs))
-          throw new Error("Invalid crab data");
-        setCrabCount(crabData.crabs.length);
-        setCrabError(null);
+        if (crabData.message) {
+          setCrabCount(0);
+          setCrabMessage(crabData.message);
+          setCrabError(null);
+        } else {
+          if (!Array.isArray(crabData.crabs))
+            throw new Error("Invalid crab data");
+          setCrabCount(crabData.crabs.length);
+          setCrabMessage(null);
+          setCrabError(null);
+        }
       } catch (e: any) {
         setCrabError(e.message || "Unknown error");
+        setCrabMessage(null);
       } finally {
         setCrabLoading(false);
       }
@@ -255,6 +275,12 @@ export default function StatsPage() {
           </div>
         </div>
 
+        {fishMessage && (
+          <div className="text-center mt-4 p-3 bg-blue-900/20 border border-blue-700 rounded-lg">
+            <p className="text-blue-300">{fishMessage}</p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
             Total Fish Caught:{" "}
@@ -325,7 +351,7 @@ export default function StatsPage() {
             key="crab-card"
             variants={cardVariants}
             whileHover="hover"
-            className="bg-gradient-to-br from-yellow-800/30 to-yellow-900/60 border border-yellow-700/50 backdrop-blur-lg p-6 rounded-3xl shadow-md flex flex-col items-center"
+            className={`bg-gradient-to-br ${crabMessage ? 'from-red-800/30 to-red-900/60 border border-red-700/50' : 'from-yellow-800/30 to-yellow-900/60 border border-yellow-700/50'} backdrop-blur-lg p-6 rounded-3xl shadow-md flex flex-col items-center`}
           >
             <Image
               src="/crab.png"
@@ -334,19 +360,23 @@ export default function StatsPage() {
               height={72}
               className="mb-4"
             />
-            <h2 className="text-2xl font-semibold text-yellow-300 mb-1">
+            <h2 className={`text-2xl font-semibold mb-1 ${crabMessage ? 'text-red-300' : 'text-yellow-300'}`}>
               Crab
             </h2>
-            <p className="italic tracking-wide font-semibold text-yellow-400">
+            <p className={`italic tracking-wide font-semibold ${crabMessage ? 'text-red-400' : 'text-yellow-400'}`}>
               Rarity: ???
             </p>
             {crabLoading ? (
-              <p className="text-yellow-300 mt-2 text-sm font-medium">
+              <p className={`mt-2 text-sm font-medium ${crabMessage ? 'text-red-300' : 'text-yellow-300'}`}>
                 Loading...
               </p>
             ) : crabError ? (
               <p className="text-red-500 mt-2 text-xs text-center">
                 {crabError}
+              </p>
+            ) : crabMessage ? (
+              <p className={`mt-2 text-sm font-medium ${crabMessage ? 'text-red-300' : 'text-yellow-300'}`}>
+                {crabMessage}
               </p>
             ) : (
               <p className="text-yellow-400 mt-2 text-sm font-medium">
