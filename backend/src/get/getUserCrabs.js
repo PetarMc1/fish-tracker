@@ -61,6 +61,13 @@ async function getUserCrabs(req, res) {
     const crabDocs = await crabCollection
       .find({}, { projection: { fish: 1, _id: 0 } })
       .toArray();
+
+    if (crabDocs.length === 0) {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ user: user.name, message: "No crabs found for this gamemode" }));
+      return;
+    }
+
     const crabs = crabDocs.map((doc) => doc.fish);
 
     res.writeHead(200, { "Content-Type": "application/json" });

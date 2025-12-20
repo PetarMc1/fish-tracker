@@ -68,21 +68,21 @@ async function getUserFish(req, res) {
 
     const cursor = fishCollection.find({}, { projection: { fish: 1, rarity: 1, _id: 0 } });
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.write(`{"user":"${user.name}","fish":[`);
+    const fishDocs = await cursor.toArray();
 
-    let first = true;
-    for await (const doc of cursor) {
-      const fishItem = {
-        name: doc.fish,
-        rarity: mapRarity(doc.rarity),
-      };
-      if (!first) res.write(",");
-      res.write(JSON.stringify(fishItem));
-      first = false;
+    if (fishDocs.length === 0) {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ user: user.name, message: "No fish found for this gamemode" }));
+      return;
     }
 
-    res.end("]}");
+    const fish = fishDocs.map(doc => ({
+      name: doc.fish,
+      rarity: mapRarity(doc.rarity),
+    }));
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ user: user.name, fish }));
   } catch (err) {
     console.error("[ERROR] Failed to retrieve fish:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
