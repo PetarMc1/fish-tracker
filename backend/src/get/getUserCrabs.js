@@ -15,7 +15,8 @@ async function getUserCrabs(req, res) {
     return;
   }
 
-  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const userName = url.searchParams.get("name");
   const gamemode = url.searchParams.get("gamemode");
 
   if (!userName) {
