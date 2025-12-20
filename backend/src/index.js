@@ -24,8 +24,8 @@ app.use(cors({
 app.use(express.json());
 
 const publicLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, 
-  max: 25,  
+  windowMs: 5 * 60 * 1000,
+  max: 25,
   message: { error: "Try again later. Contact the site owner for more info." }
 });
 
@@ -55,7 +55,6 @@ app.get("/status", getStatus);
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
 });
-
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running at http://0.0.0.0:${PORT}`);

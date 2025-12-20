@@ -1,9 +1,7 @@
 const axios = require("axios");
 const { MongoClient } = require("mongodb");
 const crypto = require("crypto");
-const dotenv = require("dotenv");
-
-dotenv.config();
+require("dotenv").config();
 
 const RANDOM_ORG_API_KEY = process.env.RANDOM_ORG_API_KEY;
 const MONGO_URI = process.env.MONGO_URI;

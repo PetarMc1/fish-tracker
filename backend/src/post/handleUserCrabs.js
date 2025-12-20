@@ -23,7 +23,7 @@ async function handleUserCrabs(req, res) {
   }
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  const userName = parsedUrl.searchParams.get("name"); // changed from id → name
+  const userName = parsedUrl.searchParams.get("name");
   const gamemodeHeader = req.headers["x-gamemode"];
   const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
     ? gamemodeHeader
@@ -31,7 +31,7 @@ async function handleUserCrabs(req, res) {
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Missinge4 user name in query params" }));
+    res.end(JSON.stringify({ error: "Missing user name in query params" }));
     return;
   }
 

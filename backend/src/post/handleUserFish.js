@@ -24,12 +24,12 @@ async function handleFish(req, res) {
     return;
   }
 
-  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  const userName = parsedUrl.searchParams.get("name");
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const userName = url.searchParams.get("name");
   const gamemodeHeader = req.headers["x-gamemode"];
   const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
     ? gamemodeHeader
-    : parsedUrl.searchParams.get("gamemode");
+    : url.searchParams.get("gamemode");
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -62,10 +62,9 @@ async function handleFish(req, res) {
       await client.connect();
 
       const coreDb = client.db("core_users_data");
-      const usersCollection = coreDb.collection("users");
+      const users = coreDb.collection("users");
 
-
-      const user = await usersCollection.findOne({ name: userName });
+      const user = await users.findOne({ name: userName });
 
       if (!user) {
         res.writeHead(404, { "Content-Type": "application/json" });

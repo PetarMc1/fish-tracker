@@ -11,13 +11,13 @@ function getDemoFish(req, res) {
     user: "user",
     fish: [
       { name: "fish", rarity: "Bronze" },
-      { name: "fish2 ", rarity: "Silver" },
-      { name: "fish3", rarity: "Gold" } ,
-      { name: "fish4", rarity: "Diamond" } ,
+      { name: "fish2", rarity: "Silver" },
+      { name: "fish3", rarity: "Gold" },
+      { name: "fish4", rarity: "Diamond" },
       { name: "fish5", rarity: "Platinum" },
       { name: "fish6", rarity: "Mythical" },
-      { name: "fish7", rarity: "Unknown/Other" },
-     ]
+      { name: "fish7", rarity: "Unknown/Other" }
+    ]
   };
 
   res.writeHead(200, { "Content-Type": "application/json" });
