@@ -16,7 +16,6 @@ export default function LoginPage() {
 
     Cookies.set("fishUsername", username.trim(), { expires: rememberMe ? 365 : undefined });
     window.dispatchEvent(new Event("storage"));
-
     router.push("/stats");
   };
 

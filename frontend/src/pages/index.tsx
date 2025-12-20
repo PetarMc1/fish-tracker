@@ -68,8 +68,8 @@ export default function Home() {
           viewport={{ once: true }}
           transition={{ staggerChildren: 0.2 }}
         >
-          {features.map((f, i) => (
-            <FeatureCard key={i} {...f} />
+          {features.map((feat, i) => (
+            <FeatureCard key={i} {...feat} />
           ))}
         </motion.div>
 

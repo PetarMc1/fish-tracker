@@ -41,7 +41,7 @@ const tableVariants = {
 export default function StatsPage() {
   const [fishCounts, setFishCounts] = useState<Record<string, number>>({});
   const [fishRarities, setFishRarities] = useState<Record<string, string>>({});
-  const [totalFishCaught, setTotalFishCaught] = useState(0);
+  const [totalFish, setTotalFish] = useState(0);
   const [crabCount, setCrabCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [crabLoading, setCrabLoading] = useState(true);
@@ -69,7 +69,7 @@ export default function StatsPage() {
 
         setFishCounts(counts);
         setFishRarities(rarities);
-        setTotalFishCaught(fishData.fish.length);
+        setTotalFish(fishData.fish.length);
         setError(null);
       } catch (e: any) {
         setError(e.message || "Unknown error");
@@ -81,7 +81,7 @@ export default function StatsPage() {
     const fetchCrabData = async () => {
       try {
         setCrabLoading(true);
-        const crabRes = await fetch("https://api.tracker.458011.xyz/demo/crab");
+        const crabRes = await fetch("https://api.tracker.petarmc.com/demo/crab");
         const crabData = await crabRes.json();
         if (!Array.isArray(crabData.crabs)) throw new Error("Invalid crab data");
         setCrabCount(crabData.crabs.length);
@@ -109,7 +109,7 @@ export default function StatsPage() {
     }
   };
 
-  const uniqueFishCount = Object.keys(fishCounts).filter((n) => n.toLowerCase() !== "crab").length;
+  const uniqueFish = Object.keys(fishCounts).filter((n) => n.toLowerCase() !== "crab").length;
 
   const fishList = Object.entries(fishCounts)
     .filter(([name]) => name.toLowerCase() !== "crab" && name.toLowerCase().includes(search.toLowerCase()))
@@ -177,10 +177,10 @@ export default function StatsPage() {
 
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
-            Total Fish Caught: <span className="text-blue-400">{totalFishCaught}</span>
+            Total Fish Caught: <span className="text-blue-400">{totalFish}</span>
           </p>
           <p className="text-lg font-semibold">
-            Total Unique Fish Caught: <span className="text-green-400">{uniqueFishCount}</span>
+            Total Unique Fish Caught: <span className="text-green-400">{uniqueFish}</span>
           </p>
           <button
             onClick={() => setShowStats(!showStats)}
