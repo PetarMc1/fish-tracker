@@ -43,10 +43,9 @@ async function getUserCrabs(req, res) {
     await client.connect();
 
     const coreDb = client.db("core_users_data");
-    const usersCol = coreDb.collection("users");
+    const users = coreDb.collection("users");
 
- 
-    const user = await usersCol.findOne({ name: userName });
+    const user = await users.findOne({ name: userName });
 
     if (!user) {
       res.writeHead(404, { "Content-Type": "application/json" });

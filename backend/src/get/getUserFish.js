@@ -28,9 +28,9 @@ async function getUserFish(req, res) {
     res.end(JSON.stringify({ error: "Method not allowed" }));
     return;
   }
-  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  const userName = parsedUrl.searchParams.get("name");
-  const gamemode = parsedUrl.searchParams.get("gamemode");
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const userName = url.searchParams.get("name");
+  const gamemode = url.searchParams.get("gamemode");
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -55,7 +55,6 @@ async function getUserFish(req, res) {
     const coreDb = client.db("core_users_data");
     const fishDbName = `user_data_fish_${gamemode}`;
     const fishDb = client.db(fishDbName);
-
 
     const user = await coreDb.collection("users").findOne({ name: userName });
     if (!user) {
