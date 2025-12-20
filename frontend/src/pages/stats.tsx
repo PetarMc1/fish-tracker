@@ -65,6 +65,7 @@ export default function StatsPage() {
   );
   const [asc, setAsc] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [gamemode, setGamemode] = useState("earth");
 
   useEffect(() => {
     const nameFromCookie = getCookie("fishUsername");
@@ -82,7 +83,7 @@ export default function StatsPage() {
       try {
         setLoading(true);
         const fishRes = await fetch(
-          `https://api.tracker.petarmc.com/get/fish?name=${username}`
+          `http://localhost:10000/get/fish?name=${username}&gamemode=${gamemode}`
         );
         const fishData = await fishRes.json();
         if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
@@ -109,7 +110,7 @@ export default function StatsPage() {
       try {
         setCrabLoading(true);
         const crabRes = await fetch(
-          `https://api.tracker.petarmc.com/get/crab?name=${username}`
+          `http://localhost:10000/get/crab?name=${username}&gamemode=${gamemode}`
         );
         const crabData = await crabRes.json();
         if (!Array.isArray(crabData.crabs))
@@ -125,7 +126,7 @@ export default function StatsPage() {
 
     fetchFishData();
     fetchCrabData();
-  }, [username]);
+  }, [username, gamemode]);
 
   const getFishImage = (rarity: string) => {
     switch (rarity.toLowerCase()) {
@@ -220,6 +221,16 @@ export default function StatsPage() {
           />
 
           <div className="flex items-center gap-4 md:ml-8">
+            <select
+              value={gamemode}
+              onChange={(e) => setGamemode(e.target.value)}
+              className="bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 text-sm cursor-pointer transition"
+            >
+              <option value="earth">Earth</option>
+              <option value="factions">Factions</option>
+              <option value="oneblock">Oneblock</option>
+              <option value="survival">Survival</option>
+            </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
