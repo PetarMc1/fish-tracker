@@ -40,6 +40,9 @@ function rateLimitWrapper(req, res, next) {
   return publicLimiter(req, res, next);
 }
 
+app.get("/demo/fish", getDemoFish);
+app.get("/demo/crab", getDemoCrabs);
+
 app.use(rateLimitWrapper);
 
 app.post("/post/fish", handleFish);
@@ -48,8 +51,6 @@ app.get("/get/user/key", getUserFernetKey);
 app.get("/get/fish", getUserFish);
 app.get("/get/crab", getUserCrabs);
 app.post("/create/new/user", handleCreateUser);
-app.get("/demo/fish", getDemoFish);
-app.get("/demo/crab", getDemoCrabs);
 app.get("/status", getStatus);
 
 app.use((req, res) => {
