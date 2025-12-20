@@ -83,7 +83,10 @@ export default function StatsPage() {
       try {
         setLoading(true);
         const fishRes = await fetch(
-          `http://localhost:10000/get/fish?name=${username}&gamemode=${gamemode}`
+          `http://api.tracker.petarmc.com/get/fish?name=${username}&gamemode=${gamemode}`,
+          {
+            headers: { "x-api-key": process.env.API_KEY || "" },
+          }
         );
         const fishData = await fishRes.json();
         if (fishData.message) {
@@ -120,7 +123,10 @@ export default function StatsPage() {
       try {
         setCrabLoading(true);
         const crabRes = await fetch(
-          `http://localhost:10000/get/crab?name=${username}&gamemode=${gamemode}`
+          `http://api.tracker.petarmc.com/get/crab?name=${username}&gamemode=${gamemode}`,
+          {
+            headers: { "x-api-key": process.env.API_KEY || "" },
+          }
         );
         const crabData = await crabRes.json();
         if (crabData.message) {
