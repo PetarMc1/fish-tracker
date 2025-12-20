@@ -53,16 +53,14 @@ export default function StatsPage() {
   const [username, setUsername] = useState<string | null>(null);
   const [fishCounts, setFishCounts] = useState<Record<string, number>>({});
   const [fishRarities, setFishRarities] = useState<Record<string, string>>({});
-  const [totalFishCaught, setTotalFishCaught] = useState(0);
+  const [totalFish, setTotalFish] = useState(0);
   const [crabCount, setCrabCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [crabLoading, setCrabLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [crabError, setCrabError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">(
-    "count"
-  );
+  const [sortBy, setSortBy] = useState<"count" | "rarity" | "alphabetical">("count");
   const [asc, setAsc] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [gamemode, setGamemode] = useState("earth");
@@ -91,7 +89,7 @@ export default function StatsPage() {
         if (fishData.message) {
           setFishCounts({});
           setFishRarities({});
-          setTotalFishCaught(0);
+          setTotalFish(0);
           setFishMessage(fishData.message);
           setError(null);
         } else {
@@ -106,7 +104,7 @@ export default function StatsPage() {
 
           setFishCounts(counts);
           setFishRarities(rarities);
-          setTotalFishCaught(fishData.fish.length);
+          setTotalFish(fishData.fish.length);
           setFishMessage(null);
           setError(null);
         }
@@ -167,9 +165,7 @@ export default function StatsPage() {
     }
   };
 
-  const uniqueFishCount = Object.keys(fishCounts).filter(
-    (n) => n.toLowerCase() !== "crab"
-  ).length;
+  const uniqueFish = Object.keys(fishCounts).filter((n) => n.toLowerCase() !== "crab").length;
 
   const fishList = Object.entries(fishCounts)
     .filter(
@@ -264,13 +260,7 @@ export default function StatsPage() {
               onClick={() => setAsc(!asc)}
               className="px-6 py-3 min-w-[80px] text-sm border border-neutral-700 rounded-xl hover:bg-neutral-700 transition"
             >
-              {sortBy === "alphabetical"
-                ? asc
-                  ? "A-Z ↑"
-                  : "Z-A ↓"
-                : asc
-                ? "Asc ↑"
-                : "Desc ↓"}
+              {sortBy === "alphabetical" ? (asc ? "A-Z ↑" : "Z-A ↓") : (asc ? "Asc ↑" : "Desc ↓")}
             </button>
           </div>
         </div>
@@ -283,12 +273,10 @@ export default function StatsPage() {
 
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
-            Total Fish Caught:{" "}
-            <span className="text-blue-400">{totalFishCaught}</span>
+            Total Fish Caught: <span className="text-blue-400">{totalFish}</span>
           </p>
           <p className="text-lg font-semibold">
-            Total Unique Fish Caught:{" "}
-            <span className="text-green-400">{uniqueFishCount}</span>
+            Total Unique Fish Caught: <span className="text-green-400">{uniqueFish}</span>
           </p>
           <button
             onClick={() => setShowStats(!showStats)}
