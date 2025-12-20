@@ -28,8 +28,9 @@ async function getUserFish(req, res) {
     res.end(JSON.stringify({ error: "Method not allowed" }));
     return;
   }
-  const userName = new URL(req.url, `http://${req.headers.host}`).searchParams.get("name");
-  const gamemode = url.searchParams.get("gamemode");
+  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+  const userName = parsedUrl.searchParams.get("name");
+  const gamemode = parsedUrl.searchParams.get("gamemode");
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
