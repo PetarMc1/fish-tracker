@@ -56,7 +56,7 @@ export default function StatsPage() {
     const fetchFishData = async () => {
       try {
         setLoading(true);
-        const fishRes = await fetch("https://api.tracker.458011.xyz/demo/fish");
+        const fishRes = await fetch("https://api.tracker.petarmc.com/demo/fish");
         const fishData = await fishRes.json();
         if (!Array.isArray(fishData.fish)) throw new Error("Invalid fish data");
 
