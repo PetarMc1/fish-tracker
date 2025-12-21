@@ -93,7 +93,6 @@ async function handleFish(req, res) {
       try {
         decryptedStr = token.decode();
       } catch (err) {
-        console.error("Decryption failed:", err);
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({ error: "Decryption failed or invalid token" })
@@ -105,7 +104,6 @@ async function handleFish(req, res) {
       try {
         data = JSON.parse(decryptedStr);
       } catch (err) {
-        console.error("JSON parse error:", err);
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Invalid decrypted JSON" }));
         return;
@@ -136,7 +134,6 @@ async function handleFish(req, res) {
         })
       );
     } catch (err) {
-      console.error("Server error:", err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Internal server error" }));
     } finally {
@@ -145,7 +142,6 @@ async function handleFish(req, res) {
   });
 
   req.on("error", (err) => {
-    console.error("Request error:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Server error during request" }));
   });

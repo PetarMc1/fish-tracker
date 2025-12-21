@@ -22,12 +22,12 @@ async function handleUserCrabs(req, res) {
     return;
   }
 
-  const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
-  const userName = parsedUrl.searchParams.get("name");
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const userName = url.searchParams.get("name");
   const gamemodeHeader = req.headers["x-gamemode"];
   const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
     ? gamemodeHeader
-    : parsedUrl.searchParams.get("gamemode");
+    : url.searchParams.get("gamemode");
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -81,7 +81,6 @@ async function handleUserCrabs(req, res) {
       try {
         decryptedStr = token.decode();
       } catch (err) {
-        console.error("[ERROR] Decryption failed:", err);
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Decryption failed" }));
         return;
@@ -91,7 +90,6 @@ async function handleUserCrabs(req, res) {
       try {
         data = JSON.parse(decryptedStr);
       } catch (err) {
-        console.error("[ERROR] Invalid JSON after decryption:", err);
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Decrypted data is not valid JSON" }));
         return;
@@ -127,7 +125,6 @@ async function handleUserCrabs(req, res) {
         })
       );
     } catch (err) {
-      console.error("[ERROR] MongoDB operation failed:", err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Internal server error" }));
     } finally {
@@ -136,7 +133,6 @@ async function handleUserCrabs(req, res) {
   });
 
   req.on("error", (err) => {
-    console.error("[ERROR] Request error:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Server error during request" }));
   });
