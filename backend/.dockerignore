@@ -1,3 +1,7 @@
 node_modules
 npm-debug.log
 .env
+./migrate.js
+./create-admin.js
+./openapi.json
+./readme.md

@@ -5,9 +5,84 @@
 
 A secure REST API for encrypted storage and retrieval of submitted **fish** and **crab** data. Built with Node.js, Express, MongoDB, and Fernet encryption.
 
-## Security
+## Admin Panel Setup
 
-- The API recieves encrypted data then decrypts it and puts into a database.
+The API includes a comprehensive admin panel for managing users, data, and system statistics.
+
+### Creating Admin Users
+
+1. **Initial Setup**: Create your first superadmin user:
+   ```bash
+   node create-admin.js [username] [password]
+   ```
+   Default: `node create-admin.js admin admin123`
+
+2. **Via API**: Superadmins can create additional admin users through the admin panel or API:
+   ```bash
+   POST /admin/auth/create-admin
+   Authorization: Bearer <superadmin-token>
+   {
+     "username": "newadmin",
+     "password": "securepass",
+     "role": "admin"
+   }
+   ```
+
+### Admin Roles
+
+- **superadmin**: Full access to all features including user deletion and creating new admins
+- **admin**: Access to most features except user deletion and admin creation
+
+### Admin API Endpoints
+
+#### Authentication
+- `POST /admin/auth/login` - Admin login
+- `GET /admin/auth/me` - Get current admin info
+- `POST /admin/auth/create-admin` - Create new admin (superadmin only)
+
+#### System Stats
+- `GET /admin/stats` - System statistics
+
+#### User Management
+- `GET /admin/users` - List users with pagination/search
+- `GET /admin/users/:id` - Get specific user
+- `POST /admin/users` - Create new user
+- `POST /admin/users/:id/reset` - Reset user password or Fernet key
+- `DELETE /admin/users/:id` - Delete user (superadmin only)
+
+#### Data Management
+- `GET /admin/users/:id/fish?gamemode=` - Get user's fish
+- `GET /admin/users/:id/crabs?gamemode=` - Get user's crabs
+- `DELETE /admin/fish/:fishId` - Delete fish record
+- `DELETE /admin/crab/:crabId` - Delete crab record
+- `POST /admin/fish` - Create fish records
+- `POST /admin/crab` - Create crab records
+
+#### Activity & Analytics
+- `GET /admin/activity?limit=` - Recent activity
+- `GET /admin/leaderboard?type=fish|crab&gamemode=` - Leaderboards
+
+#### Maintenance
+- `POST /admin/tasks/recalculate` - Recalculate statistics
+
+### Environment Variables
+
+Add these to your `.env` file:
+```env
+JWT_SECRET=your-super-secret-jwt-key-here
+```
+
+### Frontend Admin Panel
+
+Access the admin panel at `/admin` in your frontend application. The panel includes:
+
+- **Stats Dashboard**: System overview with user/fish/crab counts
+- **User Management**: Search, view, create, reset, and delete users
+- **Data Management**: View and manage user fish/crab data
+- **Activity Monitoring**: Recent activity and leaderboards
+- **Maintenance**: System tasks and admin user creation
+
+All admin routes require JWT authentication with Bearer tokens.
 
 ## Docker Deployment
 
@@ -80,34 +155,13 @@ Default port is 10000. The server runs on http://0.0.0.0:10000.
 > [!WARNING]
 > All API requests must have the `x-api-key` header with a value same as the one set for the `FRONTEND_API_KEY` value or there will be a request limit on the API
 
-### Create New User
+### Create New User (Admin panel only)
 
-**POST** `/create/new/user`
-Creates a new user with a unique ID and Fernet encryption key.
+User creation is restricted to the admin panel and admin API endpoints. Use the admin route:
 
-#### Required Headers:
+**POST** `/admin/users`
 
-```
-x-create-key: <CREATE_USER_API_KEY>
-```
-
-#### Body:
-
-```json
-{
-  "name": "exampleUsername"
-}
-```
-
-#### Response:
-
-```json
-{
-  "name": "exampleUsername",
-  "id": "randomGeneratedId",
-  "fernetKey": "base64EncodedKey"
-}
-```
+This endpoint requires an authenticated admin token (see Admin section).
 
 ### Get User Fernet Key
 
