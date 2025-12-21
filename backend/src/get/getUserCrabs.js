@@ -1,8 +1,6 @@
 require("dotenv").config();
-const { MongoClient } = require("mongodb");
-
-const uri = process.env.MONGO_URI;
-if (!uri) throw new Error("MONGO_URI is not set in environment");
+const CrabModel = require("../models/Crab");
+const UserModel = require("../models/User");
 
 const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
 
@@ -37,46 +35,29 @@ async function getUserCrabs(req, res) {
     return;
   }
 
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
-
-    const coreDb = client.db("core_users_data");
-    const users = coreDb.collection("users");
-
-    const user = await users.findOne({ name: userName });
-
+    const user = await UserModel.findByName(userName);
     if (!user) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "User not found" }));
       return;
     }
 
-    const crabDbName = `user_data_crab_${gamemode}`;
-    const crabDb = client.db(crabDbName);
-    const crabCollection = crabDb.collection(user.name);
+    const crabs = await CrabModel.findByUserAndGamemode(userName, gamemode);
 
-    const crabDocs = await crabCollection
-      .find({}, { projection: { fish: 1, _id: 0 } })
-      .toArray();
-
-    if (crabDocs.length === 0) {
+    if (crabs.length === 0) {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ user: user.name, message: "No crabs found for this gamemode" }));
       return;
     }
 
-    const crabs = crabDocs.map((doc) => doc.fish);
+    const crabNames = crabs.map(c => c.name);
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ user: user.name, crabs }));
+    res.end(JSON.stringify({ user: user.name, crabs: crabNames }));
   } catch (err) {
-    console.error("[ERROR] Failed to retrieve crabs:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
-  } finally {
-    await client.close();
   }
 }
 

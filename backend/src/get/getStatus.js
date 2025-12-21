@@ -27,7 +27,6 @@ async function getStatus(req, res) {
 
     dbStatus = "connected";
   } catch (err) {
-    console.error("[STATUS ERROR] Database check failed:", err);
     dbStatus = "disconnected";
   } finally {
     await client.close();

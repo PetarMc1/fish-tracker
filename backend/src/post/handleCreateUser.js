@@ -1,24 +1,40 @@
 const axios = require("axios");
 const { MongoClient } = require("mongodb");
 const crypto = require("crypto");
+const jwt = require('jsonwebtoken');
 require("dotenv").config();
 
 const RANDOM_ORG_API_KEY = process.env.RANDOM_ORG_API_KEY;
 const MONGO_URI = process.env.MONGO_URI;
-const CREATE_USER_API_KEY = process.env.CREATE_USER_API_KEY;
 
 async function handleCreateUser(req, res) {
   try {
+    const authHeader = req.headers['authorization'];
+    if (!authHeader || typeof authHeader !== 'string' || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Authorization header missing or invalid' });
+    }
+
+    const token = authHeader.substring(7);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    const db = client.db('core_users_data');
+    const admin = await db.collection('admins').findOne({ username: decoded.username });
+    if (!admin) {
+      await client.close();
+      return res.status(401).json({ error: 'Admin not found' });
+    }
     const { name, password } = req.body;
-    const apiKey = req.headers["x-create-key"];
     let userPassword = password;
 
     if (!name) {
       return res.status(400).json({ error: "Missing name" });
-    }
-
-    if (apiKey !== CREATE_USER_API_KEY) {
-      return res.status(401).json({ error: "Unauthorized" });
     }
 
     if (!userPassword) {
@@ -63,10 +79,6 @@ async function handleCreateUser(req, res) {
 
     const fernetKey = crypto.randomBytes(32).toString("base64");
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-
-    const db = client.db("core_users_data");
     const users = db.collection("users");
 
     await users.insertOne({
@@ -81,7 +93,6 @@ async function handleCreateUser(req, res) {
 
     return res.status(201).json({ name, id, userPassword, fernetKey });
   } catch (error) {
-    console.error("Error in handleCreateUser:", error);
     return res
       .status(500)
       .json({ error: error.message || "Internal server error" });

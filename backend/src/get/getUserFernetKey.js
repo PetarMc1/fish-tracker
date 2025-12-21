@@ -64,7 +64,6 @@ async function getUserFernetKey(req, res) {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ fernetKey: user.fernetKey }));
   } catch (err) {
-    console.error("[ERROR] Failed to retrieve fernetKey:", err);
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
   } finally {
