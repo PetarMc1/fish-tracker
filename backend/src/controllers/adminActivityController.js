@@ -2,47 +2,6 @@ const UserModel = require('../models/User');
 const FishModel = require('../models/Fish');
 const CrabModel = require('../models/Crab');
 
-async function getActivity(req, res) {
-  try {
-    const { limit = 50 } = req.query;
-
-    const users = await UserModel.findAll({}, { limit: parseInt(limit), sort: { createdAt: -1 } });
-
-    const activity = users.map(user => ({
-      type: 'user_created',
-      userId: user.id,
-      userName: user.name,
-      timestamp: user.createdAt,
-      details: `User ${user.name} registered`
-    }));
-
-    const mockActivities = [
-      {
-        type: 'fish_caught',
-        userId: 'demo',
-        userName: 'DemoUser',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        details: 'Caught a Diamond fish in survival mode'
-      },
-      {
-        type: 'crab_caught',
-        userId: 'demo',
-        userName: 'DemoUser',
-        timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-        details: 'Caught a Platinum crab in factions mode'
-      }
-    ];
-
-    const allActivity = [...mockActivities, ...activity].sort((a, b) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    ).slice(0, parseInt(limit));
-
-    res.json({ activity: allActivity });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
 async function getLeaderboard(req, res) {
   try {
     const { type, gamemode } = req.query;
@@ -84,4 +43,4 @@ async function getLeaderboard(req, res) {
   }
 }
 
-module.exports = { getActivity, getLeaderboard };
+module.exports = { getLeaderboard };

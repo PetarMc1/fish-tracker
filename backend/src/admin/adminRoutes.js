@@ -5,7 +5,7 @@ const { getMe, createAdmin } = require('../controllers/adminAuthController');
 const { getStats } = require('../controllers/adminStatsController');
 const { getUsers, getUserById, createUser, resetUser, deleteUser } = require('../controllers/adminUserController');
 const { getUserFish, getUserCrabs, deleteFish, deleteCrab, createFish, createCrab } = require('../controllers/adminDataController');
-const { getActivity, getLeaderboard } = require('../controllers/adminActivityController');
+const { getLeaderboard } = require('../controllers/adminActivityController');
 
 const router = express.Router();
 
@@ -29,7 +29,6 @@ router.delete('/crab/:crabId', deleteCrab);
 router.post('/fish', createFish);
 router.post('/crab', createCrab);
 
-router.get('/activity', getActivity);
 router.get('/leaderboard', getLeaderboard);
 
 module.exports = router;
