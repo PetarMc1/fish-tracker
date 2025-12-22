@@ -140,8 +140,8 @@ async function createFish(req, res) {
       if (!f.name || typeof f.name !== 'string' || f.name.length === 0) {
         return res.status(400).json({ error: 'Each fish must have a valid name' });
       }
-      if (typeof f.rarity !== 'number' || f.rarity < 0 || f.rarity > 6) {
-        return res.status(400).json({ error: 'Fish rarity must be a number between 0 and 6' });
+      if (typeof f.rarity !== 'number' || f.rarity < 1 || f.rarity > 7) {
+        return res.status(400).json({ error: 'Fish rarity must be a number between 1 and 7' });
       }
     }
 
