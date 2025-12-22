@@ -24,7 +24,6 @@ export default function Home() {
           </p>
         </motion.div>
 
-        {/* Application and Demo Section */}
         <Section title="Reserved Fishing Spot Application" />
         <motion.div
           initial={{ opacity: 0, y: 10 }}
