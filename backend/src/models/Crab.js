@@ -13,13 +13,13 @@ class CrabModel {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
     const crabDb = client.db(`user_data_crab_${gamemode}`);
-    const crabs = await crabDb.collection(userName).find({}, { projection: { fish: 1, _id: 1 } }).toArray();
+    const crabs = await crabDb.collection(userName).find({}, { projection: { fish: 1, _id: 1, timestamp: 1 } }).toArray();
     await client.close();
 
     return crabs.map(doc => ({
       id: doc._id.toString(),
-      name: doc.fish, 
-      rarity: 'Common' 
+      fish: doc.fish, 
+      timestamp: doc.timestamp
     }));
   }
 
