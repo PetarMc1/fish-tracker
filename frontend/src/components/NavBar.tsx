@@ -14,7 +14,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const checkLogin = () => {
-      const id = Cookies.get("fishUserId") || null;
+      const id = Cookies.get("fishUsername") || null;
       setUserId(id);
       setIsLoggedIn(!!id);
     };
@@ -26,14 +26,13 @@ export default function Navbar() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const id = Cookies.get("fishUserId") || null;
+      const id = Cookies.get("fishUsername") || null;
       setUserId(id);
       setIsLoggedIn(!!id);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Close menu if clicked outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -49,7 +48,7 @@ export default function Navbar() {
   }, [menuOpen]);
 
   const handleLogout = () => {
-    Cookies.remove("fishUserId");
+    Cookies.remove("fishUsername");
     setUserId(null);
     setIsLoggedIn(false);
     setMenuOpen(false);

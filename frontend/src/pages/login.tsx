@@ -14,7 +14,8 @@ export default function LoginPage() {
     e.preventDefault();
     if (!username.trim()) return;
 
-    Cookies.set("fishUsername", username.trim(), { expires: rememberMe ? 365 : undefined });
+    const cookieOptions = rememberMe ? { expires: 365 } : {};
+    Cookies.set("fishUsername", username.trim(), cookieOptions);
     window.dispatchEvent(new Event("storage"));
     router.push("/stats");
   };
