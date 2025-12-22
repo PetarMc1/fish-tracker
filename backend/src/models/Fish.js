@@ -25,13 +25,14 @@ class FishModel {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
     const fishDb = client.db(`user_data_fish_${gamemode}`);
-    const fish = await fishDb.collection(userName).find({}, { projection: { fish: 1, rarity: 1, _id: 1 } }).toArray();
+    const fish = await fishDb.collection(userName).find({}, { projection: { fish: 1, rarity: 1, _id: 1, timestamp: 1 } }).toArray();
     await client.close();
 
     return fish.map(doc => ({
       id: doc._id.toString(),
       name: doc.fish,
-      rarity: this.mapRarity(doc.rarity)
+      rarity: this.mapRarity(doc.rarity),
+      timestamp: doc.timestamp
     }));
   }
 
