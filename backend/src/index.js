@@ -45,6 +45,7 @@ function rateLimitWrapper(req, res, next) {
 
 app.get("/demo/fish", getDemoFish);
 app.get("/demo/crab", getDemoCrabs);
+app.get("/status", getStatus);
 
 app.get("/admin/auth/csrf-token", (req, res) => {
   const token = generateCSRFToken();
@@ -64,7 +65,6 @@ app.post("/post/crab", handleUserCrabs);
 app.get("/get/user/key", getUserFernetKey);
 app.get("/get/fish", getUserFish);
 app.get("/get/crab", getUserCrabs);
-app.get("/status", getStatus);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
