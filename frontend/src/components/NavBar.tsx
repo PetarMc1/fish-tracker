@@ -8,14 +8,14 @@ import { useRouter } from "next/navigation";
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkLogin = () => {
       const id = Cookies.get("fishUsername") || null;
-      setUserId(id);
+      setUserName(id);
       setIsLoggedIn(!!id);
     };
 
@@ -27,7 +27,7 @@ export default function Navbar() {
   useEffect(() => {
     const interval = setInterval(() => {
       const id = Cookies.get("fishUsername") || null;
-      setUserId(id);
+      setUserName(id);
       setIsLoggedIn(!!id);
     }, 1000);
     return () => clearInterval(interval);
@@ -49,7 +49,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     Cookies.remove("fishUsername");
-    setUserId(null);
+    setUserName(null);
     setIsLoggedIn(false);
     setMenuOpen(false);
     router.push("/logged-out");
@@ -121,7 +121,7 @@ export default function Navbar() {
               {menuOpen && (
                 <ul className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <li className="px-4 py-2 text-sm text-neutral-400 select-text break-all">
-                    <span className="font-semibold text-white">User ID:</span> {userId}
+                    <span className="font-semibold text-white">User:</span> {userName}
                   </li>
                   <li>
                     <button
