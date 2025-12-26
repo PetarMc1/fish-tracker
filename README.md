@@ -12,14 +12,6 @@
 A full-stack application to track and visualize fishing statistics on the [**CosmosMC Minecraft server**](https://cosmosmc.org).
 
 
-## App (Desktop Logger)
-
-- Parses **Lunar Client logs** to detect fishing and crab catching events.
-- Supports all fish types and rarities.
-- Automatically encrypts catch data using **Fernet (AES 128-bit)**.
-- Sends encrypted logs to the backend API in real time.
-- Detailed info [here](/app/README.md)
-
 ## API (Backend)
 
 - [Deployable with Docker](/backend/README.md#docker-deployment)
@@ -42,6 +34,17 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - User summaries and stats
   - Secure login/logout
 - Detailed info [here](/frontend/README.md)
+
+## App (Desktop Logger)
+
+> [!IMPORTANT]
+> This desktop logger is incompatible with the recent [`id → name`](https://github.com/PetarMc1/fish-tracker/commit/6a14a2bab53005b810f13a7a93442255c498fbe1) API change and is no longer maintained. Use the maintained [**Fish Tracker Mod**](https://github.com/PetarMc1/fish-tracker-mod).
+
+- Parses **Lunar Client logs** to detect fishing and crab catching events.
+- Supports all fish types and rarities.
+- Automatically encrypts catch data using **Fernet (AES 128-bit)**.
+- Sends encrypted logs to the backend API in real time.
+- Detailed info [here](/app/README.md)
 
 ## Security
 
