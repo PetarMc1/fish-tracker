@@ -58,14 +58,14 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur bg-[#0f0f11]/80">
       <div className="flex items-center justify-between py-4 px-6 max-w-6xl mx-auto">
-        <button
-          onClick={() => router.push("/")}
-          className="text-2xl font-bold text-white select-none hover:text-blue-400 transition-colors duration-300"
-        >
-          Fish Logger
-        </button>
-
         <div className="flex items-center gap-6">
+          <button
+            onClick={() => router.push("/")}
+            className="text-2xl font-bold text-white select-none hover:text-blue-400 transition-colors duration-300"
+          >
+            Fish Tracker
+          </button>
+
           <button
             onClick={() => router.push("/")}
             className="text-white hover:text-blue-400 transition-colors duration-300"
@@ -74,6 +74,16 @@ export default function Navbar() {
             Home
           </button>
 
+          <button
+            onClick={() => router.push("/mod")}
+            className="text-white hover:text-blue-400 transition-colors duration-300"
+            aria-label="Mod page"
+          >
+            Mod
+          </button>
+        </div>
+
+        <div className="flex items-center gap-6">
           {isLoggedIn && (
             <button
               onClick={() => router.push("/stats")}

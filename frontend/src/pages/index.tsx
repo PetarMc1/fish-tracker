@@ -94,9 +94,9 @@ export default function Home() {
 
 const features = [
   {
-    title: "Desktop Logger",
+    title: "FishTracker Mod",
     content:
-      "Parses Lunar Client logs to detect fish and crab catches. AES-128 Fernet encryption in real time.",
+      "In-game Fabric mod that parses chat messages to detect fish and crab catches, encrypts data with Fernet, and forwards entries to the tracker API.",
   },
   {
     title: "Backend API",
@@ -106,7 +106,7 @@ const features = [
   {
     title: "Frontend Viewer",
     content:
-      "Search, filter, and view stats in real time. Includes user summaries and secure login/logout.",
+      "Search, filter, and view stats in real time. Includes user summaries and login/logout.",
   },
   {
     title: "Security First",
