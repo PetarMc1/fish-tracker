@@ -268,6 +268,15 @@ export default function StatsPage() {
           </div>
         )}
 
+        {error && (
+          <div className="text-center mt-4 p-3 bg-red-900/20 border border-red-700 rounded-lg">
+            <p className="text-red-300">{error} The API might be down. <br/>
+            For more info go to <a href="https://status.petarmc.com" className="underline">https://status.petarmc.com</a> <br/>
+            If the API isnt down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" className="underline">issue</a>.
+            </p>
+          </div>
+        )}
+
         <div className="text-center space-y-2">
           <p className="text-lg font-semibold">
             Total Fish Caught: <span className="text-blue-400">{totalFish}</span>
