@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const FishTrackerMod: React.FC = () => {
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans">
-      <div className="max-w-4xl mx-auto px-6 py-20 space-y-16">
+      <div className="max-w-4xl mx-auto px-6 space-y-16">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

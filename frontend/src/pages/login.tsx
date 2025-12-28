@@ -21,7 +21,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans flex items-center justify-center px-6 py-16">
+    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans flex items-center justify-center pb-16">
       <motion.form
         onSubmit={handleLogin}
         initial={{ opacity: 0, y: 20 }}

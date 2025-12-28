@@ -7,7 +7,7 @@ export default function LoggedOutPage() {
   const router = useRouter();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans">
+    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans pt-16">
       <section className="max-w-6xl mx-auto px-6 py-16 space-y-24 flex flex-col items-center justify-center min-h-[70vh]">
         <motion.div
           initial={{ opacity: 0, y: -20 }}

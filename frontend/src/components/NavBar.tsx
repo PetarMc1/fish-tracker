@@ -56,7 +56,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 backdrop-blur bg-[#0f0f11]/80">
+    <nav className="sticky top-0 w-full z-50 backdrop-blur bg-[#0f0f11]/80">
       <div className="flex items-center justify-between py-4 px-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-6">
           <button
