@@ -199,15 +199,6 @@ export default function StatsPage() {
       }
     });
 
-  const fishCountByRarity = Object.entries(fishRarities).reduce<
-    Record<string, number>
-  >((acc, [name, rarity]) => {
-    if (name.toLowerCase() === "crab") return acc;
-    const key = rarity.toLowerCase();
-    acc[key] = (acc[key] || 0) + fishCounts[name];
-    return acc;
-  }, {});
-
   if (!username) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white p-4 font-sans">
@@ -321,13 +312,25 @@ export default function StatsPage() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(fishCountByRarity).map(([rarity, count]) => (
+                {[
+                  "bronze",
+                  "silver",
+                  "gold",
+                  "diamond",
+                  "platinum",
+                  "mythical",
+                  "unknown/other",
+                ].map((rarity) => (
                   <tr
                     key={rarity}
                     className="even:bg-neutral-800/70 odd:bg-neutral-800/50 transition hover:bg-neutral-700/50"
                   >
-                    <td className="px-6 py-2 capitalize">{rarity}</td>
-                    <td className="px-6 py-2">{count}</td>
+                    <td className="px-6 py-2 capitalize">
+                      {rarity === "unknown/other" ? "Unknown/Other" : rarity}
+                    </td>
+                    <td className="px-6 py-2">
+                      {Object.entries(fishRarities).filter(([name, r]) => r.toLowerCase() === rarity && name.toLowerCase() !== "crab").reduce((sum, [name]) => sum + fishCounts[name], 0)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
