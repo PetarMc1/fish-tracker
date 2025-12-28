@@ -44,6 +44,8 @@ function TabButton({ active, onClick, children, icon }: TabButtonProps) {
   );
 }
 
+const HiddenClasses = () => <div className="hidden underline text-orange-500"></div>;
+
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<Tab>('stats');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -60,6 +62,7 @@ export default function AdminPage() {
   const [leaderboardGamemode, setLeaderboardGamemode] = useState('earth');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [usersPagination, setUsersPagination] = useState<UsersResponse['pagination'] | null>(null);
@@ -73,12 +76,14 @@ export default function AdminPage() {
   const [creatingUser, setCreatingUser] = useState(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [viewingUserLoading, setViewingUserLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   const [currentAdmin, setCurrentAdmin] = useState<{ username: string; role: string } | null>(null);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [createAdminUsername, setCreateAdminUsername] = useState('');
   const [createAdminPassword, setCreateAdminPassword] = useState('');
   const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   const [dataUsers, setDataUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState('');
@@ -88,6 +93,7 @@ export default function AdminPage() {
   const [userFish, setUserFish] = useState<FishEntry[]>([]);
   const [userCrabs, setUserCrabs] = useState<CrabEntry[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -135,7 +141,11 @@ export default function AdminPage() {
       const data = await adminApi.getStats();
       setStats(data);
     } catch (error) {
-      setStatsError(error instanceof Error ? error.message : 'Failed to load stats');
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setStatsError(errorMessage);
     } finally {
       setStatsLoading(false);
     }
@@ -144,10 +154,15 @@ export default function AdminPage() {
   const loadLeaderboard = async () => {
     try {
       setLeaderboardLoading(true);
+      setLeaderboardError(null);
       const data = await adminApi.getLeaderboard(leaderboardType, leaderboardGamemode);
       setLeaderboard(data.leaderboard);
     } catch (error) {
-      console.error('Failed to load leaderboard:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setLeaderboardError(errorMessage);
     } finally {
       setLeaderboardLoading(false);
     }
@@ -156,11 +171,16 @@ export default function AdminPage() {
   const loadUsers = async () => {
     try {
       setUsersLoading(true);
+      setUsersError(null);
       const data = await adminApi.getUsers(currentPage, 10, usersSearch || undefined);
       setUsers(data.users);
       setUsersPagination(data.pagination);
     } catch (error) {
-      console.error('Failed to load users:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setUsersError(errorMessage);
     } finally {
       setUsersLoading(false);
     }
@@ -176,7 +196,19 @@ export default function AdminPage() {
       await adminApi.login(loginUsername, loginPassword);
       setIsLoggedIn(true);
     } catch (error) {
-      setLoginError(error instanceof Error ? error.message : 'Login failed');
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
+        errorMessage = 'Invalid username or password. Please check your credentials and try again.';
+      } else if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage = 'NetworkError when attempting to fetch resource. The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-orange-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-orange-500">issue</a>.';
+      } else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
+        errorMessage = 'Internal Server Error.';
+      } else if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
+        errorMessage = 'Too Many Requests. Try again later.';
+      }
+      
+      setLoginError(errorMessage);
     } finally {
       setLoginLoading(false);
     }
@@ -194,8 +226,13 @@ export default function AdminPage() {
     try {
       const admin = await adminApi.getMe();
       setCurrentAdmin(admin);
+      setAdminError(null);
     } catch (error) {
-      console.error('Failed to load admin info:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setAdminError(errorMessage);
       setCurrentAdmin(null);
     }
   };
@@ -204,8 +241,13 @@ export default function AdminPage() {
     try {
       const data = await adminApi.getUsers(1, 100);
       setDataUsers(data.users);
+      setDataError(null);
     } catch (error) {
-      console.error('Failed to load users for data management:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setDataError(errorMessage);
     }
   };
 
@@ -214,6 +256,7 @@ export default function AdminPage() {
 
     try {
       setDataLoading(true);
+      setDataError(null);
       const [fishData, crabData] = await Promise.all([
         adminApi.getUserFish(selectedUser, selectedGamemode),
         adminApi.getUserCrabs(selectedUser, selectedGamemode)
@@ -221,7 +264,11 @@ export default function AdminPage() {
       setUserFish(fishData.fish || []);
       setUserCrabs(crabData.crabs || []);
     } catch (error) {
-      console.error('Failed to load user data:', error);
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
+        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      }
+      setDataError(errorMessage);
     } finally {
       setDataLoading(false);
     }
@@ -373,7 +420,7 @@ export default function AdminPage() {
 
       {statsError && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400">{statsError}</p>
+          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: statsError }} />
           <button
             onClick={loadStats}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -459,6 +506,16 @@ export default function AdminPage() {
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         </div>
+      ) : leaderboardError ? (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: leaderboardError }} />
+          <button
+            onClick={loadLeaderboard}
+            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Retry
+          </button>
+        </div>
       ) : (
         <div className="bg-neutral-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
@@ -528,6 +585,16 @@ export default function AdminPage() {
       {usersLoading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        </div>
+      ) : usersError ? (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: usersError }} />
+          <button
+            onClick={loadUsers}
+            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Retry
+          </button>
         </div>
       ) : (
         <>
@@ -619,10 +686,23 @@ export default function AdminPage() {
 
   const renderAdminsTab = () => (
     <div className="space-y-8">
+    
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Admin Management</h2>
         <p className="text-neutral-400">Manage admin accounts</p>
       </div>
+
+    {adminError && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: adminError }} />
+          <button
+            onClick={loadCurrentAdmin}
+            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       <div className="flex justify-center">
         <button
@@ -654,11 +734,23 @@ export default function AdminPage() {
 
   const renderDataTab = () => (
     <div className="space-y-8">
+
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Data Management</h2>
         <p className="text-neutral-400">Manage fish and crab data</p>
       </div>
-
+        
+                    {dataError && dataUsers.length === 0 && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: dataError }} />
+          <button
+            onClick={loadDataUsers}
+            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <div className="bg-neutral-800 p-6 rounded-xl">
         <h3 className="text-xl font-semibold text-white mb-4">Select User & Gamemode</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -693,6 +785,8 @@ export default function AdminPage() {
         </div>
       </div>
 
+      
+
       {selectedUser && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-neutral-800 p-6 rounded-xl">
@@ -700,6 +794,18 @@ export default function AdminPage() {
               <FaFish />
               Fish Management
             </h3>
+
+            {dataError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-4">
+                <p className="text-red-400" dangerouslySetInnerHTML={{ __html: dataError }} />
+                <button
+                  onClick={loadUserData}
+                  className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
 
             <div className="space-y-4 mb-6">
               <h4 className="text-lg font-medium text-white">Add Fish</h4>
@@ -863,6 +969,13 @@ export default function AdminPage() {
         >
           <h1 className="text-4xl font-bold">Admin Login</h1>
 
+          
+            {loginError && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+                <p className="text-red-400" dangerouslySetInnerHTML={{ __html: loginError }} />
+              </div>
+            )}
+
           <form onSubmit={handleLogin} className="space-y-4">
             <input
               type="text"
@@ -881,10 +994,6 @@ export default function AdminPage() {
               className="w-full bg-neutral-700 border border-neutral-600 rounded-lg px-4 py-3 text-base placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required
             />
-
-            {loginError && (
-              <p className="text-red-400 text-sm">{loginError}</p>
-            )}
 
             <button
               type="submit"
@@ -993,6 +1102,8 @@ export default function AdminPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      <span className="text-orange-500 hidden"></span>
 
       {showCreateUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
