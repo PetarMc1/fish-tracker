@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaChartBar,
   FaTrophy,
@@ -14,12 +14,20 @@ import {
   FaPlus,
   FaTrash,
   FaRedo,
-  FaEye
-} from 'react-icons/fa';
-import StatCard from '../components/StatCard';
-import { adminApi, AdminStats, LeaderboardEntry, User, UsersResponse, FishEntry, CrabEntry } from '../utils/adminAPI';
+  FaEye,
+} from "react-icons/fa";
+import StatCard from "../components/StatCard";
+import {
+  adminApi,
+  AdminStats,
+  LeaderboardEntry,
+  User,
+  UsersResponse,
+  FishEntry,
+  CrabEntry,
+} from "../utils/adminAPI";
 
-type Tab = 'stats' | 'leaderboards' | 'users' | 'data' | 'admins';
+type Tab = "stats" | "leaderboards" | "users" | "data" | "admins";
 
 interface TabButtonProps {
   active: boolean;
@@ -34,8 +42,8 @@ function TabButton({ active, onClick, children, icon }: TabButtonProps) {
       onClick={onClick}
       className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
         active
-          ? 'bg-blue-500 text-white shadow-lg'
-          : 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white'
+          ? "bg-blue-500 text-white shadow-lg"
+          : "bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white"
       }`}
     >
       {icon}
@@ -44,51 +52,60 @@ function TabButton({ active, onClick, children, icon }: TabButtonProps) {
   );
 }
 
-const HiddenClasses = () => <div className="hidden underline text-orange-500"></div>;
+const HiddenClasses = () => (
+  <div className="hidden underline text-orange-500"></div>
+);
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('stats');
+  const [activeTab, setActiveTab] = useState<Tab>("stats");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loginUsername, setLoginUsername] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
 
-  const [leaderboardType, setLeaderboardType] = useState<'fish' | 'crab'>('fish');
-  const [leaderboardGamemode, setLeaderboardGamemode] = useState('earth');
+  const [leaderboardType, setLeaderboardType] = useState<"fish" | "crab">(
+    "fish"
+  );
+  const [leaderboardGamemode, setLeaderboardGamemode] = useState("earth");
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
-  const [usersPagination, setUsersPagination] = useState<UsersResponse['pagination'] | null>(null);
+  const [usersPagination, setUsersPagination] = useState<
+    UsersResponse["pagination"] | null
+  >(null);
   const [usersLoading, setUsersLoading] = useState(false);
-  const [usersSearch, setUsersSearch] = useState('');
+  const [usersSearch, setUsersSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
   const [showCreateUser, setShowCreateUser] = useState(false);
-  const [createUserName, setCreateUserName] = useState('');
-  const [createUserPassword, setCreateUserPassword] = useState('');
+  const [createUserName, setCreateUserName] = useState("");
+  const [createUserPassword, setCreateUserPassword] = useState("");
   const [creatingUser, setCreatingUser] = useState(false);
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [viewingUserLoading, setViewingUserLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  const [currentAdmin, setCurrentAdmin] = useState<{ username: string; role: string } | null>(null);
+  const [currentAdmin, setCurrentAdmin] = useState<{
+    username: string;
+    role: string;
+  } | null>(null);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
-  const [createAdminUsername, setCreateAdminUsername] = useState('');
-  const [createAdminPassword, setCreateAdminPassword] = useState('');
+  const [createAdminUsername, setCreateAdminUsername] = useState("");
+  const [createAdminPassword, setCreateAdminPassword] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
 
   const [dataUsers, setDataUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState('');
-  const [selectedGamemode, setSelectedGamemode] = useState('earth');
-  const [fishForm, setFishForm] = useState({ name: '', rarity: 1 });
+  const [selectedUser, setSelectedUser] = useState("");
+  const [selectedGamemode, setSelectedGamemode] = useState("earth");
+  const [fishForm, setFishForm] = useState({ name: "", rarity: 1 });
   const [crabCount, setCrabCount] = useState(1);
   const [userFish, setUserFish] = useState<FishEntry[]>([]);
   const [userCrabs, setUserCrabs] = useState<CrabEntry[]>([]);
@@ -96,40 +113,40 @@ export default function AdminPage() {
   const [dataError, setDataError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem("adminToken");
     if (token) {
       setIsLoggedIn(true);
     }
   }, []);
 
   useEffect(() => {
-    if (activeTab === 'stats') {
+    if (activeTab === "stats") {
       loadStats();
-    } else if (activeTab === 'leaderboards') {
+    } else if (activeTab === "leaderboards") {
       loadLeaderboard();
-    } else if (activeTab === 'users') {
+    } else if (activeTab === "users") {
       loadUsers();
-    } else if (activeTab === 'data') {
+    } else if (activeTab === "data") {
       loadDataUsers();
-    } else if (activeTab === 'admins') {
+    } else if (activeTab === "admins") {
       loadCurrentAdmin();
     }
   }, [activeTab, refreshTrigger]);
 
   useEffect(() => {
-    if (activeTab === 'leaderboards') {
+    if (activeTab === "leaderboards") {
       loadLeaderboard();
     }
   }, [leaderboardType, leaderboardGamemode]);
 
   useEffect(() => {
-    if (activeTab === 'users') {
+    if (activeTab === "users") {
       loadUsers();
     }
   }, [currentPage, usersSearch]);
 
   useEffect(() => {
-    if (activeTab === 'data' && selectedUser) {
+    if (activeTab === "data" && selectedUser) {
       loadUserData();
     }
   }, [selectedUser, selectedGamemode]);
@@ -141,9 +158,14 @@ export default function AdminPage() {
       const data = await adminApi.getStats();
       setStats(data);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setStatsError(errorMessage);
     } finally {
@@ -155,12 +177,20 @@ export default function AdminPage() {
     try {
       setLeaderboardLoading(true);
       setLeaderboardError(null);
-      const data = await adminApi.getLeaderboard(leaderboardType, leaderboardGamemode);
+      const data = await adminApi.getLeaderboard(
+        leaderboardType,
+        leaderboardGamemode
+      );
       setLeaderboard(data.leaderboard);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setLeaderboardError(errorMessage);
     } finally {
@@ -172,13 +202,22 @@ export default function AdminPage() {
     try {
       setUsersLoading(true);
       setUsersError(null);
-      const data = await adminApi.getUsers(currentPage, 10, usersSearch || undefined);
+      const data = await adminApi.getUsers(
+        currentPage,
+        10,
+        usersSearch || undefined
+      );
       setUsers(data.users);
       setUsersPagination(data.pagination);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setUsersError(errorMessage);
     } finally {
@@ -196,18 +235,33 @@ export default function AdminPage() {
       await adminApi.login(loginUsername, loginPassword);
       setIsLoggedIn(true);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
 
-      if (errorMessage.includes('401') || errorMessage.includes('Invalid credentials')) {
-        errorMessage = 'Invalid username or password. Please check your credentials and try again.';
-      } else if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage = 'NetworkError when attempting to fetch resource. The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-orange-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-orange-500">issue</a>.';
-      } else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
-        errorMessage = 'Internal Server Error.';
-      } else if (errorMessage.includes('429') || errorMessage.includes('Too Many Requests')) {
-        errorMessage = 'Too Many Requests. Try again later.';
+      if (
+        errorMessage.includes("401") ||
+        errorMessage.includes("Invalid credentials")
+      ) {
+        errorMessage =
+          "Invalid username or password. Please check your credentials and try again.";
+      } else if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage =
+          'NetworkError when attempting to fetch resource. The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-orange-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-orange-500">issue</a>.';
+      } else if (
+        errorMessage.includes("500") ||
+        errorMessage.includes("Internal Server Error")
+      ) {
+        errorMessage = "Internal Server Error.";
+      } else if (
+        errorMessage.includes("429") ||
+        errorMessage.includes("Too Many Requests")
+      ) {
+        errorMessage = "Too Many Requests. Try again later.";
       }
-      
+
       setLoginError(errorMessage);
     } finally {
       setLoginLoading(false);
@@ -217,8 +271,8 @@ export default function AdminPage() {
   const handleLogout = () => {
     adminApi.logout();
     setIsLoggedIn(false);
-    setLoginUsername('');
-    setLoginPassword('');
+    setLoginUsername("");
+    setLoginPassword("");
     setLoginError(null);
   };
 
@@ -228,9 +282,14 @@ export default function AdminPage() {
       setCurrentAdmin(admin);
       setAdminError(null);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setAdminError(errorMessage);
       setCurrentAdmin(null);
@@ -243,9 +302,14 @@ export default function AdminPage() {
       setDataUsers(data.users);
       setDataError(null);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setDataError(errorMessage);
     }
@@ -259,14 +323,19 @@ export default function AdminPage() {
       setDataError(null);
       const [fishData, crabData] = await Promise.all([
         adminApi.getUserFish(selectedUser, selectedGamemode),
-        adminApi.getUserCrabs(selectedUser, selectedGamemode)
+        adminApi.getUserCrabs(selectedUser, selectedGamemode),
       ]);
       setUserFish(fishData.fish || []);
       setUserCrabs(crabData.crabs || []);
     } catch (error) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage.includes('NetworkError') || errorMessage.includes('Failed to fetch')) {
-        errorMessage += ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
+      let errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (
+        errorMessage.includes("NetworkError") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        errorMessage +=
+          ' The API might be down.<br/>For more info go to <a href="https://status.petarmc.com" class="underline text-red-500">https://status.petarmc.com</a>.<br/>If the API isn\'t down please contact the owner or open an <a href="https://github.com/PetarMc1/fish-tracker/issues" class="underline text-red-500">issue</a>.';
       }
       setDataError(errorMessage);
     } finally {
@@ -278,14 +347,19 @@ export default function AdminPage() {
     if (!selectedUser || !fishForm.name.trim()) return;
 
     try {
-      await adminApi.createFish(selectedUser, selectedGamemode, [{
-        name: fishForm.name.trim(),
-        rarity: fishForm.rarity
-      }]);
-      setFishForm({ name: '', rarity: 1 });
+      await adminApi.createFish(selectedUser, selectedGamemode, [
+        {
+          name: fishForm.name.trim(),
+          rarity: fishForm.rarity,
+        },
+      ]);
+      setFishForm({ name: "", rarity: 1 });
       await loadUserData();
     } catch (error) {
-      alert('Failed to add fish: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to add fish: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   };
 
@@ -296,7 +370,10 @@ export default function AdminPage() {
       await adminApi.deleteFish(fishId, selectedUser, selectedGamemode);
       await loadUserData();
     } catch (error) {
-      alert('Failed to remove fish: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to remove fish: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   };
 
@@ -308,7 +385,10 @@ export default function AdminPage() {
       setCrabCount(1);
       await loadUserData();
     } catch (error) {
-      alert('Failed to add crabs: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to add crabs: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   };
 
@@ -319,12 +399,19 @@ export default function AdminPage() {
       await adminApi.deleteCrab(crabId, selectedUser, selectedGamemode);
       await loadUserData();
     } catch (error) {
-      alert('Failed to remove crab: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to remove crab: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this user? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -333,7 +420,10 @@ export default function AdminPage() {
       await adminApi.deleteUser(userId);
       await loadUsers();
     } catch (error) {
-      alert('Failed to delete user: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to delete user: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     } finally {
       setDeletingUser(null);
     }
@@ -345,14 +435,22 @@ export default function AdminPage() {
 
     try {
       setCreatingUser(true);
-      const result = await adminApi.createUser(createUserName, createUserPassword || undefined);
-      alert(`User created successfully!\nUsername: ${result.name}\nPassword: ${result.userPassword}\nFernet Key: ${result.fernetKey}`);
-      setCreateUserName('');
-      setCreateUserPassword('');
+      const result = await adminApi.createUser(
+        createUserName,
+        createUserPassword || undefined
+      );
+      alert(
+        `User created successfully!\nUsername: ${result.name}\nPassword: ${result.userPassword}\nFernet Key: ${result.fernetKey}`
+      );
+      setCreateUserName("");
+      setCreateUserPassword("");
       setShowCreateUser(false);
       await loadUsers();
     } catch (error) {
-      alert('Failed to create user: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to create user: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     } finally {
       setCreatingUser(false);
     }
@@ -364,13 +462,21 @@ export default function AdminPage() {
 
     try {
       setCreatingAdmin(true);
-      const result = await adminApi.createAdmin(createAdminUsername, createAdminPassword);
-      alert(`Admin created successfully!\nUsername: ${result.username}\nRole: ${result.role}`);
-      setCreateAdminUsername('');
-      setCreateAdminPassword('');
+      const result = await adminApi.createAdmin(
+        createAdminUsername,
+        createAdminPassword
+      );
+      alert(
+        `Admin created successfully!\nUsername: ${result.username}\nRole: ${result.role}`
+      );
+      setCreateAdminUsername("");
+      setCreateAdminPassword("");
       setShowCreateAdmin(false);
     } catch (error) {
-      alert('Failed to create admin: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to create admin: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     } finally {
       setCreatingAdmin(false);
     }
@@ -382,34 +488,51 @@ export default function AdminPage() {
       const user = await adminApi.getUserById(userId);
       setViewingUser(user);
     } catch (error) {
-      alert('Failed to load user details: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        "Failed to load user details: " +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     } finally {
       setViewingUserLoading(false);
     }
   };
 
-  const handleResetUser = async (userId: string, type: 'password' | 'fernet') => {
+  const handleResetUser = async (
+    userId: string,
+    type: "password" | "fernet"
+  ) => {
     if (!confirm(`Are you sure you want to reset this user's ${type}?`)) {
       return;
     }
 
     try {
       const result = await adminApi.resetUser(userId, type);
-      if (type === 'password') {
-        alert(`Password reset successfully!\nNew password: ${result.newPassword}`);
+      if (type === "password") {
+        alert(
+          `Password reset successfully!\nNew password: ${result.newPassword}`
+        );
       } else {
-        alert(`Fernet key reset successfully!\nNew key: ${result.newFernetKey}`);
+        alert(
+          `Fernet key reset successfully!\nNew key: ${result.newFernetKey}`
+        );
       }
     } catch (error) {
-      alert(`Failed to reset ${type}: ` + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        `Failed to reset ${type}: ` +
+          (error instanceof Error ? error.message : "Unknown error")
+      );
     }
   };
 
   const renderStatsTab = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-white mb-2">Dashboard Statistics</h2>
-        <p className="text-neutral-400">Overview of platform metrics and user activity</p>
+        <h2 className="text-3xl font-bold text-white mb-2">
+          Dashboard Statistics
+        </h2>
+        <p className="text-neutral-400">
+          Overview of platform metrics and user activity
+        </p>
       </div>
 
       {statsLoading && (
@@ -420,7 +543,10 @@ export default function AdminPage() {
 
       {statsError && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: statsError }} />
+          <p
+            className="text-red-400"
+            dangerouslySetInnerHTML={{ __html: statsError }}
+          />
           <button
             onClick={loadStats}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -483,7 +609,9 @@ export default function AdminPage() {
       <div className="flex flex-wrap gap-4 justify-center">
         <select
           value={leaderboardType}
-          onChange={(e) => setLeaderboardType(e.target.value as 'fish' | 'crab')}
+          onChange={(e) =>
+            setLeaderboardType(e.target.value as "fish" | "crab")
+          }
           className="px-4 py-2 bg-neutral-800 border border-neutral-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="fish">Fish</option>
@@ -508,7 +636,10 @@ export default function AdminPage() {
         </div>
       ) : leaderboardError ? (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: leaderboardError }} />
+          <p
+            className="text-red-400"
+            dangerouslySetInnerHTML={{ __html: leaderboardError }}
+          />
           <button
             onClick={loadLeaderboard}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -522,9 +653,15 @@ export default function AdminPage() {
             <table className="w-full">
               <thead className="bg-neutral-700">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Rank</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Username</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Count</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                    Rank
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                    Username
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                    Count
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -573,7 +710,7 @@ export default function AdminPage() {
             className="w-full pl-10 pr-4 py-2 bg-neutral-800 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <button 
+        <button
           onClick={() => setShowCreateUser(true)}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
         >
@@ -588,7 +725,10 @@ export default function AdminPage() {
         </div>
       ) : usersError ? (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: usersError }} />
+          <p
+            className="text-red-400"
+            dangerouslySetInnerHTML={{ __html: usersError }}
+          />
           <button
             onClick={loadUsers}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -603,9 +743,15 @@ export default function AdminPage() {
               <table className="w-full">
                 <thead className="bg-neutral-700">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Username</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Joined</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">Actions</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                      Username
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                      Joined
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-neutral-300">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -624,15 +770,15 @@ export default function AdminPage() {
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <div className="flex gap-2">
-                          <button 
+                          <button
                             onClick={() => handleViewUser(user.id)}
                             disabled={viewingUserLoading}
                             className="p-2 bg-neutral-600 text-neutral-300 rounded hover:bg-neutral-500 transition disabled:opacity-50"
                           >
                             <FaEye />
                           </button>
-                          <button 
-                            onClick={() => handleResetUser(user.id, 'password')}
+                          <button
+                            onClick={() => handleResetUser(user.id, "password")}
                             className="p-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition"
                             title="Reset Password"
                           >
@@ -671,7 +817,11 @@ export default function AdminPage() {
                 Page {currentPage} of {usersPagination.pages}
               </span>
               <button
-                onClick={() => setCurrentPage(Math.min(usersPagination.pages, currentPage + 1))}
+                onClick={() =>
+                  setCurrentPage(
+                    Math.min(usersPagination.pages, currentPage + 1)
+                  )
+                }
                 disabled={currentPage === usersPagination.pages}
                 className="px-4 py-2 bg-neutral-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-600 transition"
               >
@@ -686,15 +836,17 @@ export default function AdminPage() {
 
   const renderAdminsTab = () => (
     <div className="space-y-8">
-    
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Admin Management</h2>
         <p className="text-neutral-400">Manage admin accounts</p>
       </div>
 
-    {adminError && (
+      {adminError && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: adminError }} />
+          <p
+            className="text-red-400"
+            dangerouslySetInnerHTML={{ __html: adminError }}
+          />
           <button
             onClick={loadCurrentAdmin}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -716,7 +868,9 @@ export default function AdminPage() {
 
       {currentAdmin && (
         <div className="bg-neutral-800 rounded-xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">Current Admin</h3>
+          <h3 className="text-xl font-semibold text-white mb-4">
+            Current Admin
+          </h3>
           <div className="space-y-2">
             <div>
               <label className="text-sm text-neutral-400">Username</label>
@@ -734,15 +888,17 @@ export default function AdminPage() {
 
   const renderDataTab = () => (
     <div className="space-y-8">
-
       <div className="text-center">
         <h2 className="text-3xl font-bold text-white mb-2">Data Management</h2>
         <p className="text-neutral-400">Manage fish and crab data</p>
       </div>
-        
-                    {dataError && dataUsers.length === 0 && (
+
+      {dataError && dataUsers.length === 0 && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-          <p className="text-red-400" dangerouslySetInnerHTML={{ __html: dataError }} />
+          <p
+            className="text-red-400"
+            dangerouslySetInnerHTML={{ __html: dataError }}
+          />
           <button
             onClick={loadDataUsers}
             className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -752,10 +908,14 @@ export default function AdminPage() {
         </div>
       )}
       <div className="bg-neutral-800 p-6 rounded-xl">
-        <h3 className="text-xl font-semibold text-white mb-4">Select User & Gamemode</h3>
+        <h3 className="text-xl font-semibold text-white mb-4">
+          Select User & Gamemode
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-2">User</label>
+            <label className="block text-sm font-medium text-neutral-300 mb-2">
+              User
+            </label>
             <select
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
@@ -770,7 +930,9 @@ export default function AdminPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-2">Gamemode</label>
+            <label className="block text-sm font-medium text-neutral-300 mb-2">
+              Gamemode
+            </label>
             <select
               value={selectedGamemode}
               onChange={(e) => setSelectedGamemode(e.target.value)}
@@ -785,8 +947,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      
-
       {selectedUser && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-neutral-800 p-6 rounded-xl">
@@ -797,7 +957,10 @@ export default function AdminPage() {
 
             {dataError && (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-4">
-                <p className="text-red-400" dangerouslySetInnerHTML={{ __html: dataError }} />
+                <p
+                  className="text-red-400"
+                  dangerouslySetInnerHTML={{ __html: dataError }}
+                />
                 <button
                   onClick={loadUserData}
                   className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -814,12 +977,19 @@ export default function AdminPage() {
                   type="text"
                   placeholder="Fish name"
                   value={fishForm.name}
-                  onChange={(e) => setFishForm({ ...fishForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setFishForm({ ...fishForm, name: e.target.value })
+                  }
                   className="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <select
                   value={fishForm.rarity}
-                  onChange={(e) => setFishForm({ ...fishForm, rarity: parseInt(e.target.value) })}
+                  onChange={(e) =>
+                    setFishForm({
+                      ...fishForm,
+                      rarity: parseInt(e.target.value),
+                    })
+                  }
                   className="px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value={1}>Bronze</option>
@@ -839,7 +1009,9 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <h4 className="text-lg font-medium text-white mb-4">Remove Fish</h4>
+              <h4 className="text-lg font-medium text-white mb-4">
+                Remove Fish
+              </h4>
               {dataLoading ? (
                 <div className="flex justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
@@ -851,19 +1023,32 @@ export default function AdminPage() {
                     const time = new Date(fish.timestamp).toLocaleTimeString();
 
                     return (
-                      <div key={fish.id} className="flex items-center justify-between bg-neutral-700 p-3 rounded-lg">
+                      <div
+                        key={fish.id}
+                        className="flex items-center justify-between bg-neutral-700 p-3 rounded-lg"
+                      >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-white font-medium">{fish.name}</span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              fish.rarity === 'Mythical' ? 'bg-purple-500/20 text-purple-300' :
-                              fish.rarity === 'Platinum' ? 'bg-blue-500/20 text-blue-300' :
-                              fish.rarity === 'Diamond' ? 'bg-cyan-500/20 text-cyan-300' :
-                              fish.rarity === 'Gold' ? 'bg-yellow-500/20 text-yellow-300' :
-                              fish.rarity === 'Silver' ? 'bg-gray-500/20 text-gray-300' :
-                              fish.rarity === 'Bronze' ? 'bg-orange-500/20 text-orange-300' :
-                              'bg-red-500/20 text-red-300'
-                            }`}>
+                            <span className="text-white font-medium">
+                              {fish.name}
+                            </span>
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-medium ${
+                                fish.rarity === "Mythical"
+                                  ? "bg-purple-500/20 text-purple-300"
+                                  : fish.rarity === "Platinum"
+                                  ? "bg-blue-500/20 text-blue-300"
+                                  : fish.rarity === "Diamond"
+                                  ? "bg-cyan-500/20 text-cyan-300"
+                                  : fish.rarity === "Gold"
+                                  ? "bg-yellow-500/20 text-yellow-300"
+                                  : fish.rarity === "Silver"
+                                  ? "bg-gray-500/20 text-gray-300"
+                                  : fish.rarity === "Bronze"
+                                  ? "bg-orange-500/20 text-orange-300"
+                                  : "bg-red-500/20 text-red-300"
+                              }`}
+                            >
                               {fish.rarity}
                             </span>
                           </div>
@@ -882,7 +1067,9 @@ export default function AdminPage() {
                   })}
                 </div>
               ) : (
-                <p className="text-neutral-400 text-center py-4">No fish found</p>
+                <p className="text-neutral-400 text-center py-4">
+                  No fish found
+                </p>
               )}
             </div>
           </div>
@@ -914,7 +1101,9 @@ export default function AdminPage() {
             </div>
 
             <div>
-              <h4 className="text-lg font-medium text-white mb-4">Remove Crabs</h4>
+              <h4 className="text-lg font-medium text-white mb-4">
+                Remove Crabs
+              </h4>
               {dataLoading ? (
                 <div className="flex justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
@@ -926,7 +1115,10 @@ export default function AdminPage() {
                     const time = new Date(crab.timestamp).toLocaleTimeString();
 
                     return (
-                      <div key={crab.id} className="flex items-center justify-between bg-neutral-700 p-3 rounded-lg">
+                      <div
+                        key={crab.id}
+                        className="flex items-center justify-between bg-neutral-700 p-3 rounded-lg"
+                      >
                         <div className="flex-1">
                           <span className="text-white font-medium">Crab</span>
                           <div className="text-neutral-400 text-xs mt-1">
@@ -949,7 +1141,9 @@ export default function AdminPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-neutral-400 text-center py-4">No crabs found</p>
+                <p className="text-neutral-400 text-center py-4">
+                  No crabs found
+                </p>
               )}
             </div>
           </div>
@@ -969,12 +1163,14 @@ export default function AdminPage() {
         >
           <h1 className="text-4xl font-bold">Admin Login</h1>
 
-          
-            {loginError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
-                <p className="text-red-400" dangerouslySetInnerHTML={{ __html: loginError }} />
-              </div>
-            )}
+          {loginError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+              <p
+                className="text-red-400"
+                dangerouslySetInnerHTML={{ __html: loginError }}
+              />
+            </div>
+          )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <input
@@ -1000,7 +1196,7 @@ export default function AdminPage() {
               disabled={loginLoading}
               className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loginLoading ? 'Logging in...' : 'Login'}
+              {loginLoading ? "Logging in..." : "Login"}
             </button>
           </form>
         </motion.div>
@@ -1035,50 +1231,50 @@ export default function AdminPage() {
 
         <div className="flex flex-wrap justify-center gap-4 mb-12">
           <TabButton
-            active={activeTab === 'stats'}
+            active={activeTab === "stats"}
             onClick={() => {
-              setActiveTab('stats');
-              setRefreshTrigger(prev => prev + 1);
+              setActiveTab("stats");
+              setRefreshTrigger((prev) => prev + 1);
             }}
             icon={<FaChartBar />}
           >
             Stats
           </TabButton>
           <TabButton
-            active={activeTab === 'leaderboards'}
+            active={activeTab === "leaderboards"}
             onClick={() => {
-              setActiveTab('leaderboards');
-              setRefreshTrigger(prev => prev + 1);
+              setActiveTab("leaderboards");
+              setRefreshTrigger((prev) => prev + 1);
             }}
             icon={<FaTrophy />}
           >
             Leaderboards
           </TabButton>
           <TabButton
-            active={activeTab === 'users'}
+            active={activeTab === "users"}
             onClick={() => {
-              setActiveTab('users');
-              setRefreshTrigger(prev => prev + 1);
+              setActiveTab("users");
+              setRefreshTrigger((prev) => prev + 1);
             }}
             icon={<FaUsers />}
           >
             User Management
           </TabButton>
           <TabButton
-            active={activeTab === 'data'}
+            active={activeTab === "data"}
             onClick={() => {
-              setActiveTab('data');
-              setRefreshTrigger(prev => prev + 1);
+              setActiveTab("data");
+              setRefreshTrigger((prev) => prev + 1);
             }}
             icon={<FaDatabase />}
           >
             Data Management
           </TabButton>
           <TabButton
-            active={activeTab === 'admins'}
+            active={activeTab === "admins"}
             onClick={() => {
-              setActiveTab('admins');
-              setRefreshTrigger(prev => prev + 1);
+              setActiveTab("admins");
+              setRefreshTrigger((prev) => prev + 1);
             }}
             icon={<FaUser />}
           >
@@ -1094,11 +1290,11 @@ export default function AdminPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            {activeTab === 'stats' && renderStatsTab()}
-            {activeTab === 'leaderboards' && renderLeaderboardsTab()}
-            {activeTab === 'users' && renderUsersTab()}
-            {activeTab === 'data' && renderDataTab()}
-            {activeTab === 'admins' && renderAdminsTab()}
+            {activeTab === "stats" && renderStatsTab()}
+            {activeTab === "leaderboards" && renderLeaderboardsTab()}
+            {activeTab === "users" && renderUsersTab()}
+            {activeTab === "data" && renderDataTab()}
+            {activeTab === "admins" && renderAdminsTab()}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -1108,7 +1304,9 @@ export default function AdminPage() {
       {showCreateUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl font-bold text-white mb-4">Create New User</h3>
+            <h3 className="text-xl font-bold text-white mb-4">
+              Create New User
+            </h3>
             <form onSubmit={handleCreateUser}>
               <div className="space-y-4">
                 <input
@@ -1131,8 +1329,8 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => {
                       setShowCreateUser(false);
-                      setCreateUserName('');
-                      setCreateUserPassword('');
+                      setCreateUserName("");
+                      setCreateUserPassword("");
                     }}
                     className="flex-1 px-4 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-500 transition"
                   >
@@ -1143,7 +1341,7 @@ export default function AdminPage() {
                     disabled={creatingUser}
                     className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:opacity-50"
                   >
-                    {creatingUser ? 'Creating...' : 'Create User'}
+                    {creatingUser ? "Creating..." : "Create User"}
                   </button>
                 </div>
               </div>
@@ -1167,18 +1365,20 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="text-sm text-neutral-400">Joined</label>
-                <p className="text-white">{new Date(viewingUser.createdAt).toLocaleString()}</p>
+                <p className="text-white">
+                  {new Date(viewingUser.createdAt).toLocaleString()}
+                </p>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => handleResetUser(viewingUser.id, 'password')}
+                onClick={() => handleResetUser(viewingUser.id, "password")}
                 className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
                 Reset Password
               </button>
               <button
-                onClick={() => handleResetUser(viewingUser.id, 'fernet')}
+                onClick={() => handleResetUser(viewingUser.id, "fernet")}
                 className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
               >
                 Reset Fernet Key
@@ -1197,7 +1397,9 @@ export default function AdminPage() {
       {showCreateAdmin && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-xl font-bold text-white mb-4">Create New Admin</h3>
+            <h3 className="text-xl font-bold text-white mb-4">
+              Create New Admin
+            </h3>
             <form onSubmit={handleCreateAdmin}>
               <div className="space-y-4">
                 <input
@@ -1221,8 +1423,8 @@ export default function AdminPage() {
                     type="button"
                     onClick={() => {
                       setShowCreateAdmin(false);
-                      setCreateAdminUsername('');
-                      setCreateAdminPassword('');
+                      setCreateAdminUsername("");
+                      setCreateAdminPassword("");
                     }}
                     className="flex-1 px-4 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-500 transition"
                   >
@@ -1233,7 +1435,7 @@ export default function AdminPage() {
                     disabled={creatingAdmin}
                     className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50"
                   >
-                    {creatingAdmin ? 'Creating...' : 'Create Admin'}
+                    {creatingAdmin ? "Creating..." : "Create Admin"}
                   </button>
                 </div>
               </div>
