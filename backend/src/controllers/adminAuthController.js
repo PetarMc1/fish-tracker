@@ -5,12 +5,39 @@ require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
+const failedAttempts = new Map();
+const cooldowns = new Map();
+const MAX_ATTEMPTS = 10;
+const COOLDOWN_MINUTES = 2;
+
 async function adminLogin(req, res) {
   try {
     const { username, password } = req.body;
+    const clientIP = req.ip || req.connection.remoteAddress;
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    const now = Date.now();
+    const attempts = failedAttempts.get(clientIP) || 0;
+    const cooldownUntil = cooldowns.get(clientIP);
+
+    if (cooldownUntil && now < cooldownUntil) {
+      const remainingMinutes = Math.ceil((cooldownUntil - now) / (1000 * 60));
+      return res.status(429).json({ 
+        error: `Too many failed attempts. Try again in ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}.` 
+      });
+    }
+
+    if (attempts >= MAX_ATTEMPTS) {
+      const cooldownTime = now + (COOLDOWN_MINUTES * 60 * 1000);
+      cooldowns.set(clientIP, cooldownTime);
+      failedAttempts.delete(clientIP);
+      return res.status(429).json({ 
+        error: `Too many failed attempts. Try again in ${COOLDOWN_MINUTES} minutes.` 
+      });
     }
 
     const admin = await AdminModel.findByUsername(username);
@@ -19,13 +46,18 @@ async function adminLogin(req, res) {
     await new Promise(resolve => setTimeout(resolve, delay));
     
     if (!admin) {
+      failedAttempts.set(clientIP, attempts + 1);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isValidPassword = await bcrypt.compare(password, admin.password);
     if (!isValidPassword) {
+      failedAttempts.set(clientIP, attempts + 1);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    failedAttempts.delete(clientIP);
+    cooldowns.delete(clientIP);
 
     const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '24h' });
 
