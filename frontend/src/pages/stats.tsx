@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface FishEntry {
   name: string;
@@ -49,6 +49,7 @@ function getCookie(name: string) {
 
 export default function StatsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [username, setUsername] = useState<string | null>(null);
   const [fishCounts, setFishCounts] = useState<Record<string, number>>({});
@@ -66,15 +67,33 @@ export default function StatsPage() {
   const [gamemode, setGamemode] = useState("earth");
   const [fishMessage, setFishMessage] = useState<string | null>(null);
   const [crabMessage, setCrabMessage] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    if (!username) return;
+    const shareUrl = `${window.location.origin}/stats?username=${username}`;
+    if (navigator.share) {
+      await navigator.share({
+        title: `${username}'s Fish Tracker`,
+        url: shareUrl,
+      });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
+    const usernameFromParam = searchParams.get('username');
     const nameFromCookie = getCookie("fishUsername");
-    if (!nameFromCookie) {
+    const finalUsername = usernameFromParam || nameFromCookie;
+    if (!finalUsername) {
       router.replace("/login");
       return;
     }
-    setUsername(nameFromCookie);
-  }, [router]);
+    setUsername(finalUsername);
+  }, [router, searchParams]);
 
   useEffect(() => {
     if (!username) return;
@@ -222,6 +241,15 @@ export default function StatsPage() {
           <p className="text-neutral-400 text-sm">
             Live fish stats with sorting and filtering
           </p>
+          <button
+            onClick={handleShare}
+            className="mt-2 px-4 py-2 text-sm border border-neutral-700 rounded-xl hover:bg-neutral-700 transition text-white"
+          >
+            Share Stats
+          </button>
+          {copied && (
+            <p className="mt-2 text-green-400 text-sm">Link copied to clipboard!</p>
+          )}
         </header>
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
