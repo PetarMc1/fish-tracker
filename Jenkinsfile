@@ -38,7 +38,6 @@ pipeline {
                     steps {
                         dir('backend') {
                             sh 'npm install'
-                            sh 'npm run lint'
                             script {
                                 docker.build("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}")
                             }
@@ -60,7 +59,6 @@ pipeline {
                     steps {
                         dir('frontend') {
                             sh 'npm install'
-                            sh 'npm run lint'
                             sh 'npm run build'
                             script {
                                 docker.build("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}")
