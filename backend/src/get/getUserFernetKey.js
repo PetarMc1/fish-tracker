@@ -41,7 +41,7 @@ async function getUserFernetKey(req, res) {
     }
     userName = decoded.slice(0, idx);
     password = decoded.slice(idx + 1);
-  } catch (e) {
+  } catch {
     res.writeHead(401, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Invalid authorization" }));
     return;
@@ -63,7 +63,7 @@ async function getUserFernetKey(req, res) {
     }
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ fernetKey: user.fernetKey }));
-  } catch (err) {
+  } catch {
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
   } finally {

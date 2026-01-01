@@ -1,5 +1,4 @@
 require("dotenv").config();
-const { MongoClient } = require("mongodb");
 const FishModel = require("../models/Fish");
 const UserModel = require("../models/User");
 
@@ -60,7 +59,7 @@ async function getUserFish(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ user: user.name, fish: fishData }));
-  } catch (err) {
+  } catch {
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
   }

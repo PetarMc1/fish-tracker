@@ -55,7 +55,7 @@ async function getUserCrabs(req, res) {
 
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ user: user.name, crabs: crabNames }));
-  } catch (err) {
+  } catch {
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
   }

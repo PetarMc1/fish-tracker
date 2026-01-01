@@ -27,7 +27,7 @@ async function authenticateAdmin(req, res, next) {
 
     req.admin = admin;
     next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({ error: 'Invalid token' });
   }
 }

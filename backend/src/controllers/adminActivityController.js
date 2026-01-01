@@ -38,7 +38,7 @@ async function getLeaderboard(req, res) {
     leaderboard.sort((a, b) => b.count - a.count);
 
     res.json({ type, gamemode, leaderboard });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }

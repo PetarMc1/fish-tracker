@@ -22,7 +22,6 @@ pipeline {
                             returnStdout: true
                         ).trim()
                     } else {
-                        echo "Push/commit webhook detected"
                         env.IS_RELEASE = false
                         env.IMAGE_TAG = "build-${env.BUILD_NUMBER}"
                     }
@@ -32,52 +31,50 @@ pipeline {
             }
         }
 
-            parallel {
-                stage('Backend') {
-                    steps {
-                        dir('backend') {
-                            sh 'npm install'
-                            sh 'npm run lint'
-                            script {
-                                docker.build("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}")
-                            }
-                            script {
-                                if (env.IS_RELEASE == "true") {
-                                    docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
-                                        docker.image("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}").push()
-                                        docker.image("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}").push('latest')
-                                    }
-                                } else {
-                                    echo "Skipping backend Docker push (not a release)."
-                                }
-                            }
-                        }
+        stage('Backend Build') {
+            steps {
+                dir('backend') {
+                    sh 'npm install'
+                    sh 'npm run lint'
+                    script {
+                        docker.build("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}")
                     }
-                }
-
-                stage('Frontend') {
-                    steps {
-                        dir('frontend') {
-                            sh 'npm install'
-                            sh 'npm run lint'
-                            sh 'npm run build'
-                            script {
-                                docker.build("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}")
+                    script {
+                        if (env.IS_RELEASE == "true") {
+                            docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
+                                docker.image("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}").push()
+                                docker.image("${BACKEND_IMAGE_NAME}:${env.IMAGE_TAG}").push('latest')
                             }
-                            script {
-                                if (env.IS_RELEASE == "true") {
-                                    docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
-                                        docker.image("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}").push()
-                                        docker.image("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}").push('latest')
-                                    }
-                                } else {
-                                    echo "Skipping frontend Docker push (not a release)."
-                                }
-                            }
+                        } else {
+                            echo "Skipping backend Docker push (not a release)"
                         }
                     }
                 }
             }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm install'
+                    sh 'npm run lint'
+                    sh 'npm run build'
+                    script {
+                        docker.build("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}")
+                    }
+                    script {
+                        if (env.IS_RELEASE == "true") {
+                            docker.withRegistry("https://${DOCKER_REGISTRY}", "${DOCKER_CREDENTIALS_ID}") {
+                                docker.image("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}").push()
+                                docker.image("${FRONTEND_IMAGE_NAME}:${env.IMAGE_TAG}").push('latest')
+                            }
+                        } else {
+                            echo "Skipping frontend Docker push (not a release)"
+                        }
+                    }
+                }
+            }
+        }
     }
 
     post {

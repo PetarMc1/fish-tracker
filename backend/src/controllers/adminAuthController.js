@@ -62,7 +62,7 @@ async function adminLogin(req, res) {
     const token = jwt.sign({ username: admin.username, role: admin.role }, JWT_SECRET, { expiresIn: '24h' });
 
     res.json({ token, admin: { username: admin.username, role: admin.role } });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -93,7 +93,7 @@ async function createAdmin(req, res) {
 
     await AdminModel.create(adminData);
     res.status(201).json({ message: 'Admin created successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }

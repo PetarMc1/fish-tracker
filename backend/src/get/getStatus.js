@@ -26,7 +26,7 @@ async function getStatus(req, res) {
     await adminDb.command({ ping: 1 });
 
     dbStatus = "connected";
-  } catch (err) {
+  } catch {
     dbStatus = "disconnected";
   } finally {
     await client.close();

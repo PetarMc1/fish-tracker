@@ -29,7 +29,7 @@ async function getUsers(req, res) {
         pages: Math.ceil(total / limit)
       }
     });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -48,7 +48,7 @@ async function getUserById(req, res) {
       name: user.name,
       createdAt: user.createdAt
     });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -128,7 +128,7 @@ async function resetUser(req, res) {
     await UserModel.updateById(id, updateData);
 
     res.json(responseData);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
@@ -144,7 +144,7 @@ async function deleteUser(req, res) {
     }
 
     res.json({ message: 'User deleted successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }

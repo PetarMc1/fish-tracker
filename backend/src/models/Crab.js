@@ -56,7 +56,7 @@ class CrabModel {
     let _id;
     try {
       _id = new ObjectId(crabId);
-    } catch (e) {
+    } catch {
       await client.close();
       return { deletedCount: 0 };
     }

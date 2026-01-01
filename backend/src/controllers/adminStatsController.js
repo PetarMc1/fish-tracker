@@ -34,7 +34,7 @@ async function getStats(req, res) {
         crabStats[gamemode] = crabCount;
         totalFish += fishCount;
         totalCrabs += crabCount;
-      } catch (err) {
+      } catch {
         fishStats[gamemode] = 0;
         crabStats[gamemode] = 0;
       }
@@ -53,7 +53,7 @@ async function getStats(req, res) {
       fishByGamemode: fishStats,
       crabsByGamemode: crabStats
     });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }

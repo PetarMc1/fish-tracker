@@ -80,7 +80,7 @@ async function handleUserCrabs(req, res) {
       let decryptedStr;
       try {
         decryptedStr = token.decode();
-      } catch (err) {
+      } catch {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Decryption failed" }));
         return;
@@ -89,7 +89,7 @@ async function handleUserCrabs(req, res) {
       let data;
       try {
         data = JSON.parse(decryptedStr);
-      } catch (err) {
+      } catch {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ error: "Decrypted data is not valid JSON" }));
         return;
@@ -124,7 +124,7 @@ async function handleUserCrabs(req, res) {
           id: result.insertedId.toString(),
         })
       );
-    } catch (err) {
+    } catch {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Internal server error" }));
     } finally {
@@ -132,7 +132,7 @@ async function handleUserCrabs(req, res) {
     }
   });
 
-  req.on("error", (err) => {
+  req.on("error", () => {
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Server error during request" }));
   });

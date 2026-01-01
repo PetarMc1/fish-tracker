@@ -1,7 +1,7 @@
 async function recalculateStats(req, res) {
   try {
     res.json({ message: 'Stats recalculated successfully' });
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Internal server error' });
   }
 }

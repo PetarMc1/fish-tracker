@@ -17,7 +17,7 @@ function verifyCSRFToken(token) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     return decoded.type === 'csrf';
-  } catch (error) {
+  } catch {
     return false;
   }
 }
