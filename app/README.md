@@ -3,6 +3,10 @@
 ![License](https://img.shields.io/github/license/PetarMc1/fish-tracker)
 [![Discord](https://img.shields.io/discord/1281676657169535097?logo=Discord&logoColor=white&label=Discord&labelColor=blue&color=green&cacheSeconds=10)](https://discord.gg/Uah2dNRhFV)
 
+> [!WARNING]
+> This application is deprecated and no longer maintained. Please use the new [Fish Tracker Mod](https://github.com/PetarMc1/fish-tracker-mod/) instead. For more info check the [docs](https://docs.petarmc.com/fish-tracker/app/intro)
+
+
 A desktop application that monitors Minecraft Lunar Client logs for fish and crab catches and sends encrypted data to a remote API.
 (soon adding other minecraft launchers)
 
