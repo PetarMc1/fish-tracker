@@ -66,6 +66,43 @@ const FishTrackerMod: React.FC = () => {
           </ul>
         </motion.section>
 
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-bold mb-4">Downloads</h2>
+          <ul className="space-y-3 text-neutral-300">
+            <li className="flex items-center gap-2">
+              <span className="text-blue-400">•</span>
+              <span>Modrinth (Coming Soon)</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-blue-400">•</span>
+              <a
+                href="https://github.com/PetarMc1/fish-tracker-mod/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-all"
+              >
+                GitHub Releases Page
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-blue-400">•</span>
+              <a
+                href="https://ci.petarmc.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-all"
+              >
+                Latest Commit Build (ci.petarmc.com)
+              </a>
+            </li>
+          </ul>
+        </motion.section>
+
         <motion.section className="text-center" initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
           <p className="text-neutral-300 mb-6 max-w-xl mx-auto">
             For installation steps, configuration details, and full usage instructions, see the official

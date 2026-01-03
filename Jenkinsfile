@@ -4,20 +4,21 @@ pipeline {
     environment {
         BACKEND_IMAGE_NAME = 'petarmc/fish-tracker-backend'
         FRONTEND_IMAGE_NAME = 'petarmc/fish-tracker-frontend'
-        IMAGE_TAG = "build-${env.BUILD_NUMBER}"
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
     stages {
         stage('Parallel Build') {
             parallel {
+
                 stage('Backend') {
                     steps {
                         dir('backend') {
                             sh 'npm install'
                             script {
                                 docker.build("${BACKEND_IMAGE_NAME}:${IMAGE_TAG}")
-                                sh "docker save -o docker-tars/${BACKEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}"
                             }
+                            sh "docker save ${BACKEND_IMAGE_NAME}:${IMAGE_TAG} | gzip > ../backend-docker-${IMAGE_TAG}.tar.gz"
                         }
                     }
                 }
@@ -29,18 +30,19 @@ pipeline {
                             sh 'npm run build'
                             script {
                                 docker.build("${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}")
-                              sh "docker save -o docker-tars/${FRONTEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}"
                             }
+                            sh "docker save ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG} | gzip > ../frontend-docker-${IMAGE_TAG}.tar.gz"
                         }
                     }
                 }
+
             }
         }
     }
 
     post {
         always {
-            archiveArtifacts artifacts: '**/*.tar', allowEmptyArchive: true
+            archiveArtifacts artifacts: '*.tar.gz'
             cleanWs()
         }
     }
