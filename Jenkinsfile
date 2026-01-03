@@ -16,7 +16,7 @@ pipeline {
                             sh 'npm install'
                             script {
                                 docker.build("${BACKEND_IMAGE_NAME}:${IMAGE_TAG}")
-                                sh "docker save -o ${BACKEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}"
+                                sh "docker save -o docker-tars/${BACKEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${BACKEND_IMAGE_NAME}:${IMAGE_TAG}"
                             }
                         }
                     }
@@ -29,7 +29,7 @@ pipeline {
                             sh 'npm run build'
                             script {
                                 docker.build("${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}")
-                                sh "docker save -o ${FRONTEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}"
+                              sh "docker save -o docker-tars/${FRONTEND_IMAGE_NAME}-${IMAGE_TAG}.tar ${FRONTEND_IMAGE_NAME}:${IMAGE_TAG}"
                             }
                         }
                     }

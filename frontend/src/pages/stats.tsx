@@ -271,6 +271,7 @@ export default function StatsPage() {
               <option value="factions">Factions</option>
               <option value="oneblock">Oneblock</option>
               <option value="survival">Survival</option>
+              <option value="boxsmp">Box SMP</option>
             </select>
             <select
               value={sortBy}

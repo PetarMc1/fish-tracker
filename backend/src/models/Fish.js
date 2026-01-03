@@ -2,7 +2,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const MONGO_URI = process.env.MONGO_URI;
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions'];
+const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
 
 class FishModel {
   static mapRarity(rarity) {

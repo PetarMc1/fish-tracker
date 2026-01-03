@@ -627,6 +627,7 @@ export default function AdminPage() {
           <option value="survival">Survival</option>
           <option value="oneblock">OneBlock</option>
           <option value="factions">Factions</option>
+          <option value="boxsmp">Box SMP</option>
         </select>
       </div>
 
@@ -942,6 +943,7 @@ export default function AdminPage() {
               <option value="survival">Survival</option>
               <option value="oneblock">OneBlock</option>
               <option value="factions">Factions</option>
+              <option value="boxsmp">BoxSMP</option>
             </select>
           </div>
         </div>

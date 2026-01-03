@@ -5,7 +5,7 @@ const Fernet = require("fernet");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in your environment variables");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
 async function handleUserCrabs(req, res) {
   if (req.method !== "POST") {
