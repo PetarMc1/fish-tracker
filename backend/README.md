@@ -92,17 +92,20 @@ Create `docker-compose.yml`:
 version: "3.9"
 
 services:
-  fish-tracker:
-    image: petarmc/fish-tracker:backend
-    ports:
-      - "10000:10000"
-    environment:
-      MONGO_URI: "mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb"
-      CREATE_USER_API_KEY: "create-user-api-key"
-      RANDOM_ORG_API_KEY: "random-org-api-key"
-      FRONTEND_API_KEY: "frontend-api-key"
-    restart: unless-stopped
-
+   fish-tracker-backend:
+      image: petarmc/fish-tracker-backend:1.x.x
+      ports:
+         - "10000:10000"
+      environment:
+         MONGO_URI: "mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb"
+         RANDOM_ORG_API_KEY: "random-org-api-key"
+         FRONTEND_API_KEY: "frontend-api-key"
+         JWT_SECRET: "your-super-secret-jwt-token"
+         ALLOWED_ORIGIN: "https://your-frontend-domain.com" # optional
+         RATE_LIMIT_WINDOW: 5  # optional otherwise defaults to 5 minutes
+         RATE_LIMIT_MAX_REQUESTS: 25   # optional otherwise defaults to 25 requests per window
+         PORT: 10000  # optional, if you change it here, change the port mapping above too
+      restart: unless-stopped
 ```
 Then start the service:
 ```bash
@@ -112,13 +115,18 @@ docker compose up -d
 ### Docker Run Command 
 ```bash
 docker run -d \
-  --name fish-tracker \
-  -p 10000:10000 \
-  -e MONGO_URI="mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb" \
-  -e CREATE_USER_API_KEY="create-user-api-key" \
-  -e RANDOM_ORG_API_KEY="random-org-api-key" \
-  -e FRONTEND_API_KEY="frontend-api-key" \
-  petarmc/fish-tracker:backend
+   --name fish-tracker-backend \
+   -p 10000:10000 \
+   -e MONGO_URI="mongodb://exampleUser:examplePass@mongo.example.com:27017/fishdb" \
+   -e RANDOM_ORG_API_KEY="random-org-api-key" \
+   -e FRONTEND_API_KEY="frontend-api-key" \
+   -e JWT_SECRET="your-super-secret-jwt-token" \
+   # -e ALLOWED_ORIGIN="https://your-frontend-domain.com" \
+   # -e PORT=10000 \
+   # -e RATE_LIMIT_WINDOW=5 \
+   # -e RATE_LIMIT_MAX_REQUESTS=25 \
+   --restart unless-stopped \
+   petarmc/fish-tracker-backend:1.x.x
 ```
 
 
@@ -152,133 +160,10 @@ node index.js
 Default port is 10000. The server runs on http://0.0.0.0:10000.
 
 ## API Endpoints
-> [!WARNING]
-> All API requests must have the `x-api-key` header with a value same as the one set for the `FRONTEND_API_KEY` value or there will be a request limit on the API
-
-### Create New User (Admin panel only)
-
-User creation is restricted to the admin panel and admin API endpoints. Use the admin route:
-
-**POST** `/admin/users`
-
-This endpoint requires an authenticated admin token (see Admin section).
-
-### Get User Fernet Key
-
-**GET** `/get/user/key?id=<userId>&password=<password>`
-Returns the user’s Fernet key (if password and ID match).
-
-### Submit Fish
-
-**POST** `/post/fish?id=<userId>`
-
-#### Headers:
-
-```
-Content-Type: application/octet-stream
-```
-
-#### Body
-
-Raw Fernet-encrypted string of:
-
-```json
-{
-  "fish": "fish",
-  "rarity": 1
-}
-```
-
-#### Response:
-
-```json
-{
-  "message": "Fish saved for user exampleUsername",
-  "id": "mongoDocumentId"
-}
-```
-
-### Submit Crab
-
-**POST** `/post/crab?id=<userId>`
-
-#### Headers:
-
-```
-Content-Type: application/octet-stream
-```
-
-#### Body
-
-Raw Fernet-encrypted string of:
-
-```json
-{
-  "fish": "crab"
-}
-```
-
-#### Response:
-
-```json
-{
-  "message": "Fish saved for user exampleUsername",
-  "id": "mongoDocumentId"
-}
-```
-
-### Get All Fish for a User
-
-**GET** `/get/fish?id=<userId>`
-
-#### Response:
-
-```json
-{
-  "user": "user",
-  "fish": [
-    {
-      "name": "fish",
-      "rarity": "Bronze"
-    }
-  ]
-}
-```
-
-### Get All Crabs for a User
-
-**GET** `/get/crab?id=<userId>`
-
-#### Response:
-
-```json
-{
-  "user": "user",
-  "crabs": ["crab", "crab", "crab"]
-}
-```
+For information on available API endpoints, refer to the [API Documentation](https://docs.petarmc.com/fish-tracker/backend/api).
 
 ## Data Structure
-
-### MongoDB Databases
-
-- core_users_data
-  - `users` collection: stores [name, ID, Fernet key, etc](#user-document).
-- user_data_fish
-  - Has all fish data for each user. One collection per username (e.g., `user`)
-- user_data_crab
-  - Has all data data for each user. One collection per username (e.g., `user`)
-
-### User Document
-
-```json
-{
-  "name": "user",
-  "id": "uniqueGeneratedId",
-  "fernetKey": "uniqueGeneratedKey",
-  "password": "password"
-}
-```
+For information on the data structure and encryption methods, refer to the [Data Structure documentation](https://docs.petarmc.com/fish-tracker/backend/models).
 
 ## [Full Fish Rarity Mapping](/README.md#full-fish-rarity-mapping)
 

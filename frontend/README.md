@@ -22,17 +22,22 @@ version: "3.9"
 
 services:
   frontend:
-    image: petarmc/fish-tracker:frontend
+    image: petarmc/fish-tracker-frontend:1.x.x
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      - API_URL=https://api.example.com
+      - API_KEY=your-api-key-here
 ```
 ### Docker Run Command
 ```bash
 docker run -d \
   -p 3000:3000 \
   --restart unless-stopped \
-  petarmc/fish-tracker:frontend
+  -e API_URL=https://api.example.com \
+  -e API_KEY=your-api-key-here \
+  petarmc/fish-tracker-frontend:1.x.x
 
 ```
 

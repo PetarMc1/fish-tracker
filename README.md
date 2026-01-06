@@ -22,7 +22,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - Fish and crab submission
   - User registration and key storage
   - Fetching logs and statistics
-- Detailed info [here](/backend/README.md)
+- Detailed info [here](https://docs.petarmc.com/fish-tracker/backend)
 
 ## Frontend (Viewer)
 
@@ -33,7 +33,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
   - Sorting, filtering, and searching
   - User summaries and stats
   - Secure login/logout
-- Detailed info [here](/frontend/README.md)
+- Detailed info [here](https://docs.petarmc.com/fish-tracker/frontend)
 
 ## App (Desktop Logger)
 
@@ -44,7 +44,7 @@ A full-stack application to track and visualize fishing statistics on the [**Cos
 - Supports all fish types and rarities.
 - Automatically encrypts catch data using **Fernet (AES 128-bit)**.
 - Sends encrypted logs to the backend API in real time.
-- Detailed info [here](/app/README.md)
+- Detailed info [here](https://docs.petarmc.com/fish-tracker/app)
 
 ## Security
 
