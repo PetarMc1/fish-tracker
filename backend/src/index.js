@@ -27,8 +27,8 @@ app.use(cors({
 app.use(express.json());
 
 const publicLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 25,
+  windowMs: (process.env.RATE_LIMIT_WINDOW || 5) * 60 * 1000,
+  max: process.env.RATE_LIMIT_MAX_REQUESTS || 25,
   message: { error: "Try again later. Contact the site owner for more info." }
 });
 
