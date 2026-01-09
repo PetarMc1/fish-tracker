@@ -1,0 +1,393 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Fish Tracker API",
+    "version": "1.0.0",
+    "description": "Public fish/crab endpoints and admin management"
+  },
+  "servers": [
+    { "url": "https://tracker.petarmc.com" },
+    { "url": "http://localhost:10000" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "AdminBearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" },
+      "AdminCsrf": { "type": "apiKey", "in": "header", "name": "x-csrf-token" },
+      "BasicAuth": { "type": "http", "scheme": "basic" },
+      "PublicBypassKey": { "type": "apiKey", "in": "header", "name": "x-api-key" }
+    },
+    "parameters": {
+      "GamemodeParam": {
+        "in": "query",
+        "name": "gamemode",
+        "required": true,
+        "schema": { "type": "string", "enum": ["oneblock", "earth", "survival", "factions", "boxsmp"] }
+      },
+      "OptionalGamemodeParam": {
+        "in": "query",
+        "name": "gamemode",
+        "required": false,
+        "schema": { "type": "string", "enum": ["oneblock", "earth", "survival", "factions", "boxsmp"] }
+      }
+    }
+  },
+  "paths": {
+    "/status": {
+      "get": {
+        "tags": ["status"],
+        "summary": "Health and DB status",
+        "responses": {
+          "200": {
+            "description": "Service status",
+            "content": { "application/json": { "example": { "ok": true, "service": "fish-tracker-api", "database": "connected", "version": "1.0.0", "uptime": 12345 } } }
+          }
+        }
+      }
+    },
+    "/demo/fish": {
+      "get": {
+        "tags": ["demo"],
+        "summary": "Example fish payload",
+        "responses": {
+          "200": {
+            "description": "Sample fish data",
+            "content": { "application/json": { "example": { "user": "user", "fish": [{ "name": "fish", "rarity": "Bronze" }] } } }
+          }
+        }
+      }
+    },
+    "/demo/crab": {
+      "get": {
+        "tags": ["demo"],
+        "summary": "Example crab payload",
+        "responses": {
+          "200": {
+            "description": "Sample crab data",
+            "content": { "application/json": { "example": { "user": "user", "crabs": ["crab", "crab"] } } }
+          }
+        }
+      }
+    },
+    "/get/fish": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get fish for user by gamemode",
+        "parameters": [
+          { "in": "query", "name": "name", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/GamemodeParam" }
+        ],
+        "responses": {
+          "200": { "description": "Fish for user" },
+          "400": { "description": "Validation error" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/get/crab": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Get crabs for user by gamemode",
+        "parameters": [
+          { "in": "query", "name": "name", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/GamemodeParam" }
+        ],
+        "responses": {
+          "200": { "description": "Crabs for user" },
+          "400": { "description": "Validation error" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/get/user/key": {
+      "get": {
+        "tags": ["user"],
+        "summary": "Fetch fernet key using Basic Auth",
+        "security": [ { "BasicAuth": [] } ],
+        "responses": {
+          "200": { "description": "Fernet key" },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Auth required or invalid" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/post/fish": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Encrypted fish submission",
+        "parameters": [
+          { "in": "query", "name": "name", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/GamemodeParam" },
+          { "in": "header", "name": "x-gamemode", "required": false, "schema": { "type": "string", "enum": ["oneblock", "earth", "survival", "factions", "boxsmp"] } },
+          { "in": "header", "name": "x-api-key", "required": false, "schema": { "type": "string" }, "description": "Bypass rate limiting when matching FRONTEND_API_KEY" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": { "description": "Fernet-encrypted JSON with fields fish (string) and rarity (number)" }
+          }
+        },
+        "responses": {
+          "201": { "description": "Stored fish" },
+          "400": { "description": "Validation failure" },
+          "404": { "description": "User missing" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/post/crab": {
+      "post": {
+        "tags": ["user"],
+        "summary": "Encrypted crab submission",
+        "parameters": [
+          { "in": "query", "name": "name", "required": true, "schema": { "type": "string" } },
+          { "$ref": "#/components/parameters/GamemodeParam" },
+          { "in": "header", "name": "x-gamemode", "required": false, "schema": { "type": "string", "enum": ["oneblock", "earth", "survival", "factions", "boxsmp"] } },
+          { "in": "header", "name": "x-api-key", "required": false, "schema": { "type": "string" }, "description": "Bypass rate limiting when matching FRONTEND_API_KEY" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": { "description": "Fernet-encrypted JSON that must equal {\"fish\":\"crab\"}" }
+          }
+        },
+        "responses": {
+          "201": { "description": "Stored crab" },
+          "400": { "description": "Validation failure" },
+          "404": { "description": "User missing" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/admin/auth/csrf-token": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Fetch CSRF token for admin routes",
+        "responses": { "200": { "description": "Token" } }
+      }
+    },
+    "/admin/auth/login": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Admin login",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "username": "admin", "password": "secret" } } }
+        },
+        "responses": {
+          "200": { "description": "Authenticated" },
+          "400": { "description": "Missing fields" },
+          "401": { "description": "Invalid credentials" },
+          "429": { "description": "Too many attempts" }
+        }
+      }
+    },
+    "/admin/auth/me": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Current admin info",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "responses": {
+          "200": { "description": "Admin info" },
+          "401": { "description": "Invalid token" }
+        }
+      }
+    },
+    "/admin/auth/create-admin": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Create admin (superadmin only)",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "username": "newadmin", "password": "pass", "role": "admin" } } }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid body" },
+          "409": { "description": "Admin exists" }
+        }
+      }
+    },
+    "/admin/stats": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Platform stats",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "responses": { "200": { "description": "Stats" } }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List users",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [
+          { "in": "query", "name": "page", "required": false, "schema": { "type": "integer", "minimum": 1 } },
+          { "in": "query", "name": "limit", "required": false, "schema": { "type": "integer", "minimum": 1 } },
+          { "in": "query", "name": "search", "required": false, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "User list" } }
+      },
+      "post": {
+        "tags": ["admin"],
+        "summary": "Create user",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "name": "user", "password": "pass" } } }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Invalid body" }
+        }
+      }
+    },
+    "/admin/users/{id}": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Get user by id",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } } ],
+        "responses": {
+          "200": { "description": "User" },
+          "404": { "description": "Not found" }
+        }
+      },
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete user (superadmin only)",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } } ],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/admin/users/{id}/reset": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Reset password or fernet key",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "type": "password" } } }
+        },
+        "responses": {
+          "200": { "description": "Reset" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/admin/users/{id}/fish": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List user's fish by gamemode",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }, { "$ref": "#/components/parameters/GamemodeParam" } ],
+        "responses": {
+          "200": { "description": "Fish" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/admin/users/{id}/crabs": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List user's crabs by gamemode",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }, { "$ref": "#/components/parameters/GamemodeParam" } ],
+        "responses": {
+          "200": { "description": "Crabs" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/admin/fish/{fishId}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete fish entry",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "fishId", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "userId": "abc", "gamemode": "earth" } } }
+        },
+        "responses": {
+          "200": { "description": "Deleted" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/admin/crab/{crabId}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete crab entry",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "crabId", "required": true, "schema": { "type": "string" } } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "userId": "abc", "gamemode": "earth" } } }
+        },
+        "responses": {
+          "200": { "description": "Deleted" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/admin/fish": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Create fish for user",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "userId": "abc", "gamemode": "earth", "fish": [{ "fish": "salmon", "rarity": 2 }] } } }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/admin/crab": {
+      "post": {
+        "tags": ["admin"],
+        "summary": "Create crabs for user",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "example": { "userId": "abc", "gamemode": "earth", "count": 3 } } }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid request" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/admin/leaderboard": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "Leaderboard by type and gamemode",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [
+          { "in": "query", "name": "type", "required": true, "schema": { "type": "string", "enum": ["fish", "crab"] } },
+          { "$ref": "#/components/parameters/GamemodeParam" }
+        ],
+        "responses": {
+          "200": { "description": "Leaderboard" },
+          "400": { "description": "Invalid request" }
+        }
+      }
+    }
+  }
+}

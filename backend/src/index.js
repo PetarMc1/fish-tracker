@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const swaggerUi = require('swagger-ui-express');
+const fs = require('fs');
+const path = require('path');
 const { verifyCsrfToken, generateCSRFToken } = require("./middleware/csrfProtection");
 
 const { getStatus } = require("./get/getStatus");
@@ -17,6 +20,13 @@ const adminRoutes = require("./admin/adminRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// Load OpenAPI specification from file
+const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));
+
+// Use swagger-ui-express for your app documentation endpoint
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || "https://tracker.petarmc.com",
