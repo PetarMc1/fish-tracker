@@ -9,6 +9,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<string[]>([]);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -17,6 +18,10 @@ export default function Navbar() {
       const id = Cookies.get("fishUsername") || null;
       setUserName(id);
       setIsLoggedIn(!!id);
+      const storedAccounts = localStorage.getItem("fishAccounts");
+      if (storedAccounts) {
+        setAccounts(JSON.parse(storedAccounts));
+      }
     };
 
     checkLogin();
@@ -29,6 +34,10 @@ export default function Navbar() {
       const id = Cookies.get("fishUsername") || null;
       setUserName(id);
       setIsLoggedIn(!!id);
+      const storedAccounts = localStorage.getItem("fishAccounts");
+      if (storedAccounts) {
+        setAccounts(JSON.parse(storedAccounts));
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -53,6 +62,15 @@ export default function Navbar() {
     setIsLoggedIn(false);
     setMenuOpen(false);
     router.push("/logged-out");
+  };
+
+  const handleSwitchAccount = (newUsername: string) => {
+    Cookies.set("fishUsername", newUsername, { expires: 365 });
+    setUserName(newUsername);
+    setMenuOpen(false);
+    window.dispatchEvent(new Event("storage"));
+    // Reload to update the page with new username
+    window.location.reload();
   };
 
   return (
@@ -132,6 +150,31 @@ export default function Navbar() {
                 <ul className="absolute right-0 mt-2 w-48 bg-neutral-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <li className="px-4 py-2 text-sm text-neutral-400 select-text break-all">
                     <span className="font-semibold text-white">User:</span> {userName}
+                  </li>
+                  {accounts.length > 1 && (
+                    <>
+                      <li className="px-4 py-2 text-xs text-neutral-500 uppercase tracking-wide">
+                        Switch Accounts
+                      </li>
+                      {accounts.filter(acc => acc !== userName).map(acc => (
+                        <li key={acc}>
+                          <button
+                            onClick={() => handleSwitchAccount(acc)}
+                            className="w-full text-left px-6 py-2 text-sm text-white hover:bg-neutral-700 transition-colors"
+                          >
+                            {acc}
+                          </button>
+                        </li>
+                      ))}
+                    </>
+                  )}
+                  <li>
+                    <button
+                      onClick={() => router.push("/login")}
+                      className="w-full text-left px-4 py-2 text-sm text-white hover:bg-blue-600 transition-colors"
+                    >
+                      Add Account
+                    </button>
                   </li>
                   <li>
                     <button
