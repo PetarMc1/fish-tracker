@@ -2,7 +2,7 @@ require("dotenv").config();
 const CrabModel = require("../models/Crab");
 const UserModel = require("../models/User");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
 async function getUserCrabs(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");

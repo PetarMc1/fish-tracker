@@ -2,7 +2,7 @@ const UserModel = require('../models/User');
 const FishModel = require('../models/Fish');
 const CrabModel = require('../models/Crab');
 
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions'];
+const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
 
 function validateGamemode(gamemode) {
   if (!VALID_GAMEMODES.includes(gamemode)) {

@@ -5,7 +5,7 @@ const UserModel = require("../models/User");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in environment");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions"];
+const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
 async function getUserFish(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
