@@ -99,6 +99,26 @@ export default function Navbar() {
           >
             Mod
           </button>
+
+          <a
+            href="https://api.tracker.petarmc.com/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-blue-400 transition-colors duration-300"
+            aria-label="API documentation"
+          >
+            API Docs
+          </a>
+
+          <a
+            href="https://docs.petarmc.com/fish-tracker"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-blue-400 transition-colors duration-300"
+            aria-label="Project documentation"
+          >
+            Docs
+          </a>
         </div>
 
         <div className="flex items-center gap-6">
