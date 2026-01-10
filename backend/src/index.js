@@ -21,12 +21,10 @@ const adminRoutes = require("./admin/adminRoutes");
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Load OpenAPI specification from file
+// load OpenAPI specifications from json file
 const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));
 
-// Use swagger-ui-express for your app documentation endpoint
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGIN || "https://tracker.petarmc.com",
@@ -56,6 +54,7 @@ function rateLimitWrapper(req, res, next) {
 app.get("/demo/fish", getDemoFish);
 app.get("/demo/crab", getDemoCrabs);
 app.get("/status", getStatus);
+app.get("/docs", (req, res) => res.redirect("https://docs.petarmc.com/fish-tracker"));
 
 app.get("/admin/auth/csrf-token", (req, res) => {
   const token = generateCSRFToken();
