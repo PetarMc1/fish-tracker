@@ -6,7 +6,7 @@
     "description": "Public fish/crab endpoints and admin management"
   },
   "servers": [
-    { "url": "https://tracker.petarmc.com" },
+    { "url": "https://api.tracker.petarmc.com" },
     { "url": "http://localhost:10000" }
   ],
   "components": {
