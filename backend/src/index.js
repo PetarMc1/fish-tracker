@@ -44,6 +44,7 @@ const PORT = process.env.PORT || 10000;
 // load OpenAPI specifications from json file
 const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));
 
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(cors({
