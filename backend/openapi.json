@@ -475,7 +475,7 @@
         }
       }
     },
-    "/v1/admin/users/{id}/crabs": {
+    "/v1/admin/users/{id}/crab": {
       "get": {
         "tags": ["admin"],
         "summary": "List user's crabs by gamemode",
