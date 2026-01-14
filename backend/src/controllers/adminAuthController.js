@@ -98,4 +98,52 @@ async function createAdmin(req, res) {
   }
 }
 
-module.exports = { adminLogin, getMe, createAdmin };
+async function createAdminV2(req, res) {
+  try {
+    const { username, password } = req.body;
+    const role = req.query.role;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password required' });
+    }
+
+    if (!['admin', 'superadmin'].includes(role)) {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const existing = await AdminModel.findByUsername(username);
+    if (existing) {
+      return res.status(409).json({ error: 'Admin already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const adminData = { username, password: hashedPassword, role };
+
+    await AdminModel.create(adminData);
+    res.status(201).json({ message: 'Admin created successfully' });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+async function listAdminsV2(req, res) {
+  try {
+    const admins = await AdminModel.findAll();
+    res.json({ admins: admins.map(a => ({ id: a._id ? a._id.toString() : null, name: a.username, role: a.role })) });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+async function deleteAdminV2(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await AdminModel.deleteById(id);
+    if (!result || result.deletedCount === 0) return res.status(404).json({ error: 'Admin not found' });
+    res.json({ message: 'Admin deleted successfully' });
+  } catch {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+module.exports = { adminLogin, getMe, createAdmin, createAdminV2, listAdminsV2, deleteAdminV2 };

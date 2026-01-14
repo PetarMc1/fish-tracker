@@ -35,35 +35,36 @@ The API includes a comprehensive admin panel for managing users, data, and syste
 
 ### Admin API Endpoints
 
-#### Authentication
-- `POST /admin/auth/login` - Admin login
-- `GET /admin/auth/me` - Get current admin info
-- `POST /admin/auth/create-admin` - Create new admin (superadmin only)
+> All admin routes require Bearer auth **and** `x-csrf-token`, except `POST /v1/admin/auth/login` and `GET /v1/admin/auth/csrf-token`.
 
-#### System Stats
-- `GET /admin/stats` - System statistics
+#### Authentication (v1)
+- `GET /v1/admin/auth/csrf-token` - Fetch CSRF token
+- `POST /v1/admin/auth/login` - Admin login
+- `GET /v1/admin/auth/me` - Get current admin info
+- `POST /v1/admin/auth/create-admin` - Create new admin (superadmin only)
 
-#### User Management
-- `GET /admin/users` - List users with pagination/search
-- `GET /admin/users/:id` - Get specific user
-- `POST /admin/users` - Create new user
-- `POST /admin/users/:id/reset` - Reset user password or Fernet key
-- `DELETE /admin/users/:id` - Delete user (superadmin only)
+#### System Stats (v1)
+- `GET /v1/admin/stats` - System statistics
 
-#### Data Management
-- `GET /admin/users/:id/fish?gamemode=` - Get user's fish
-- `GET /admin/users/:id/crabs?gamemode=` - Get user's crabs
-- `DELETE /admin/fish/:fishId` - Delete fish record
-- `DELETE /admin/crab/:crabId` - Delete crab record
-- `POST /admin/fish` - Create fish records
-- `POST /admin/crab` - Create crab records
+#### User Management (v1)
+- `GET /v1/admin/users` - List users with pagination/search
+- `GET /v1/admin/users/:id` - Get specific user
+- `POST /v1/admin/users` - Create new user
+- `POST /v1/admin/users/:id/reset` - Reset user password or Fernet key
+- `DELETE /v1/admin/users/:id` - Delete user (superadmin only)
 
-#### Activity & Analytics
-- `GET /admin/activity?limit=` - Recent activity
-- `GET /admin/leaderboard?type=fish|crab&gamemode=` - Leaderboards
+#### Data Management (v1)
+- `GET /v1/admin/users/:id/fish?gamemode=` - Get user's fish
+- `GET /v1/admin/users/:id/crabs?gamemode=` - Get user's crabs
+- `DELETE /v1/admin/fish/:fishId` - Delete fish record
+- `DELETE /v1/admin/crab/:crabId` - Delete crab record
+- `POST /v1/admin/fish` - Create fish records
+- `POST /v1/admin/crab` - Create crab records
 
-#### Maintenance
-- `POST /admin/tasks/recalculate` - Recalculate statistics
+#### Activity & Analytics (v1)
+- `GET /v1/admin/leaderboard?type=fish|crab&gamemode=` - Leaderboards
+
+**v2 (dev) endpoints** mirror the v1 admin routes under `/v2/admin/...` and also require Bearer auth plus `x-csrf-token`.
 
 ### Environment Variables
 

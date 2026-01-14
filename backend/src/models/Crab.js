@@ -65,6 +65,32 @@ class CrabModel {
     return result;
   }
 
+  static async deleteCount(userName, gamemode, count) {
+    if (!VALID_GAMEMODES.includes(gamemode)) {
+      throw new Error('Invalid gamemode');
+    }
+
+    const numericCount = parseInt(count, 10);
+    if (Number.isNaN(numericCount) || numericCount < 1) {
+      throw new Error('Invalid count');
+    }
+
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    const crabDb = client.db(`user_data_crab_${gamemode}`);
+
+    const docs = await crabDb.collection(userName).find({}, { projection: { _id: 1 } }).limit(numericCount).toArray();
+    if (docs.length === 0) {
+      await client.close();
+      return { deletedCount: 0 };
+    }
+
+    const ids = docs.map(d => d._id);
+    const result = await crabDb.collection(userName).deleteMany({ _id: { $in: ids } });
+    await client.close();
+    return result;
+  }
+
   static async insertMany(crabData, userName, gamemode) {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');

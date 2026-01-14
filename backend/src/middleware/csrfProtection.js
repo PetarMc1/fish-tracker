@@ -23,7 +23,10 @@ function verifyCSRFToken(token) {
 }
 
 function verifyCsrfToken(req, res, next) {
-  if (req.method === 'GET' || req.path === '/admin/auth/login') {
+  const original = req.originalUrl || '';
+  const isAuthLogin = original.startsWith('/v1/admin/auth/login');
+  const isCsrfFetch = original.startsWith('/v1/admin/auth/csrf-token');
+  if (isAuthLogin || isCsrfFetch) {
     return next();
   }
 
