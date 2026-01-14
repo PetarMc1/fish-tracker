@@ -36,7 +36,6 @@ async function getUserFish(req, res) {
     }
 
     const fish = await FishModel.findByUserAndGamemode(user.name, gamemode);
-    // v1 behavior: strip item ids from response
     const stripped = fish.map(f => ({ name: f.name, rarity: f.rarity, timestamp: f.timestamp }));
     res.json({ userId: id, userName: user.name, gamemode, fish: stripped });
   } catch (error) {
@@ -45,7 +44,6 @@ async function getUserFish(req, res) {
 }
  
 
-// v2: include fish id in response
 async function getUserFishV2(req, res) {
   try {
     const { id } = req.params;
@@ -88,7 +86,6 @@ async function getUserCrabs(req, res) {
     }
 
     const crabs = await CrabModel.findByUserAndGamemode(user.name, gamemode);
-    // v1 behavior: strip item ids
     const stripped = crabs.map(c => ({ fish: c.fish, timestamp: c.timestamp }));
     res.json({ userId: id, userName: user.name, gamemode, crabs: stripped });
   } catch (error) {
@@ -96,8 +93,6 @@ async function getUserCrabs(req, res) {
   }
 }
  
-
-// v2: include crab id
 async function getUserCrabsV2(req, res) {
   try {
     const { id } = req.params;
@@ -208,7 +203,6 @@ async function deleteCrab(req, res) {
 
 async function deleteCrabV2(req, res) {
   try {
-    // For v2 we delete by count for a user, not by specific crabId
     const { id: userId } = req.params;
     const { gamemode, count } = req.query;
 

@@ -34,7 +34,6 @@ async function getUsers(req, res) {
   }
 }
 
-// v2: search-only listing, no pagination
 async function getUsersV2(req, res) {
   try {
     const { search } = req.query;
@@ -119,7 +118,7 @@ async function resetUser(req, res) {
       return res.status(400).json({ error: 'Request body must be JSON' });
     }
     
-    const { type, resetApiKey } = req.body;
+    const { type } = req.body;
     
     if (!type) {
       return res.status(400).json({ error: 'type field is required' });
@@ -130,7 +129,6 @@ async function resetUser(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // legacy behaviour: only reset password or fernet key; do not touch api_keys
     let updateData = {};
     let responseData = { message: `${type} reset successfully`, userId: id };
 
@@ -224,6 +222,7 @@ async function resetUserV2(req, res) {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     let updateData = {};
+    let handleApiKey = false;
     let responseData = { message: 'reset successful', userId: id };
     if (type === 'password') {
       const newPassword = crypto.randomBytes(6).toString('hex');
@@ -234,6 +233,7 @@ async function resetUserV2(req, res) {
       updateData.fernetKey = newFernetKey;
       responseData.newFernetKey = newFernetKey;
     } else if (type === 'api-key') {
+      handleApiKey = true;
     } else {
       return res.status(400).json({ error: 'Invalid reset type' });
     }
@@ -242,7 +242,7 @@ async function resetUserV2(req, res) {
       await UserModel.updateById(id, updateData);
     }
 
-    if (type === 'api-key') {
+    if (handleApiKey) {
       const client = new MongoClient(process.env.MONGO_URI);
       try {
         await client.connect();
