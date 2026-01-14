@@ -44,14 +44,32 @@ const PORT = process.env.PORT || 10000;
 // load OpenAPI specifications from json file
 const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || "https://tracker.petarmc.com",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowed = [];
+    if (process.env.ALLOWED_ORIGIN) allowed.push(process.env.ALLOWED_ORIGIN);
+    allowed.push('http://localhost:3000', 'http://127.0.0.1:3000');
+    allowed.push('https://tracker.petarmc.com');
+
+    if (!origin) return callback(null, true);
+
+    if (allowed.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'x-csrf-token', 'x-api-key'],
+  exposedHeaders: ['Authorization'],
   credentials: true,
-}));
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 app.use(express.json());
 
