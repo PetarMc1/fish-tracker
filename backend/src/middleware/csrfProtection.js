@@ -30,6 +30,11 @@ function verifyCsrfToken(req, res, next) {
     return next();
   }
 
+  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  if (safeMethods.includes(req.method)) {
+    return next();
+  }
+
   const token = req.headers['x-csrf-token'];
   if (!token || !verifyCSRFToken(token)) {
     return res.status(403).json({ error: 'Invalid or missing CSRF token' });
