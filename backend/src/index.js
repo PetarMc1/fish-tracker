@@ -151,6 +151,12 @@ app.post('/v2/admin/admins/create', requireRole('superadmin'), createAdminV2);
 app.get('/v2/admin/admins', requireRole('superadmin'), listAdminsV2);
 app.delete('/v2/admin/admins/delete/:id', requireRole('superadmin'), deleteAdminV2);
 
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+app.listen(PORT, "0.0.0.0");
+
 app.use(rateLimitWrapper);
 
 app.post("/v1/post/fish", handleFish);
@@ -158,10 +164,3 @@ app.post("/v1/post/crab", handleUserCrabs);
 app.get("/v1/get/user/key", getUserFernetKey);
 app.get("/v1/get/fish", getUserFish);
 app.get("/v1/get/crab", getUserCrabs);
-
-app.use((req, res) => {
-  res.sendStatus(404);
-});
-
-app.listen(PORT, "0.0.0.0");
-
