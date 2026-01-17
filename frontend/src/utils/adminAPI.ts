@@ -82,9 +82,6 @@ function setAuthToken(token: string): void {
 
 async function getCsrfToken(): Promise<string> {
   const response = await fetch(`${API_BASE}/v1/admin/auth/csrf-token`, {
-    headers: {
-      'x-api-key': process.env.API_KEY || '',
-    },
   });
   const data = await response.json();
   return data.csrfToken;
@@ -95,7 +92,6 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   const token = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'x-api-key': process.env.API_KEY || '',
     ...options.headers as Record<string, string>,
   };
 
@@ -141,11 +137,14 @@ export const adminApi = {
     }
   },
 
-  getMe: (): Promise<{ username: string; role: string }> =>
-    apiRequest('/v1/admin/auth/me'),
+  getMe: async (): Promise<{ username: string; role: string }> => {
+    const res: any = await apiRequest('/v1/admin/auth/me');
+    return res && res.admin ? res.admin : res;
+  },
 
-  createAdmin: (username: string, password: string): Promise<{ username: string; role: string }> =>
-    apiRequest('/v2/admin/admins/create?role=admin', {
+  createAdmin: (username: string, password: string, role: 'admin' | 'superadmin' = 'admin'):
+    Promise<{ message?: string; username?: string; role?: string }> =>
+    apiRequest(`/v2/admin/admins/create?role=${encodeURIComponent(role)}`, {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     }),
@@ -153,13 +152,7 @@ export const adminApi = {
   getAdmins: (): Promise<{ admins: { id: string; name: string; role: string }[] }> =>
     apiRequest('/v2/admin/admins'),
 
-  createAdminV2: (username: string, password: string, role: 'admin' | 'superadmin') =>
-    apiRequest(`/v2/admin/admins/create?role=${encodeURIComponent(role)}`, {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    }),
-
-  deleteAdminV2: (id: string) =>
+  deleteAdmin: (id: string) =>
     apiRequest(`/v2/admin/admins/delete/${encodeURIComponent(id)}`, {
       method: 'DELETE',
     }),
@@ -185,18 +178,9 @@ export const adminApi = {
     }));
   },
 
-  getUsersV2: (search?: string): Promise<{ users: User[] }> => {
-    const params = new URLSearchParams();
-    if (search) params.append('search', search);
-    const qs = params.toString();
-    return apiRequest(`/v2/admin/users${qs ? `?${qs}` : ''}`);
-  },
-
   getUserById: (id: string): Promise<User> =>
     apiRequest(`/v2/admin/user/get/${encodeURIComponent(id)}`),
 
-  getUserByIdV2: (id: string): Promise<User> =>
-    apiRequest(`/v2/admin/user/get/${encodeURIComponent(id)}`),
 
   createUser: (name: string, password?: string): Promise<{ name: string; id: string; userPassword: string; fernetKey: string }> =>
     apiRequest('/v2/admin/user/create', {
@@ -204,51 +188,26 @@ export const adminApi = {
       body: JSON.stringify({ name, password }),
     }),
 
-  createUserV2: (name: string, password?: string) =>
-    apiRequest('/v2/admin/user/create', {
-      method: 'POST',
-      body: JSON.stringify({ name, password }),
-    }),
 
   resetUser: (id: string, type: 'password' | 'fernet' | 'api-key'): Promise<{ message: string; userId: string; newPassword?: string; newFernetKey?: string }> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(id)}/reset?type=${encodeURIComponent(type)}`, {
       method: 'POST',
     }),
 
-  resetUserV2: (id: string, type: 'password' | 'fernet' | 'api-key') =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(id)}/reset?type=${encodeURIComponent(type)}`, {
-      method: 'POST',
-    }),
 
   deleteUser: (id: string): Promise<{ message: string }> =>
-    apiRequest(`/v2/admin/user/delete/${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    }),
-
-  deleteUserV2: (id: string) =>
-    apiRequest(`/v2/admin/user/delete/${encodeURIComponent(id)}`, {
+    apiRequest(`/v2/admin/user/${encodeURIComponent(id)}/delete`, {
       method: 'DELETE',
     }),
 
   getUserFish: (userId: string, gamemode: string): Promise<UserDataResponse> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish?gamemode=${encodeURIComponent(gamemode)}`),
 
-  getUserFishV2: (userId: string, gamemode: string): Promise<UserDataResponse> =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish?gamemode=${encodeURIComponent(gamemode)}`),
-
   getUserCrabs: (userId: string, gamemode: string): Promise<UserDataResponse> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab?gamemode=${encodeURIComponent(gamemode)}`),
 
-  getUserCrabsV2: (userId: string, gamemode: string): Promise<UserDataResponse> =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab?gamemode=${encodeURIComponent(gamemode)}`),
 
   createFish: (userId: string, gamemode: string, fish: { name: string; rarity: number }[]): Promise<{ message: string }> =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish/create?gamemode=${encodeURIComponent(gamemode)}`, {
-      method: 'POST',
-      body: JSON.stringify(fish.length === 1 ? fish[0] : fish),
-    }),
-
-  createFishV2: (userId: string, gamemode: string, fish: { name: string; rarity: number }[]) =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish/create?gamemode=${encodeURIComponent(gamemode)}`, {
       method: 'POST',
       body: JSON.stringify(fish.length === 1 ? fish[0] : fish),
@@ -259,28 +218,15 @@ export const adminApi = {
       method: 'POST',
     }),
 
-  createCrabV2: (userId: string, gamemode: string, count: number) =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab/create?gamemode=${encodeURIComponent(gamemode)}&count=${encodeURIComponent(String(count))}`, {
-      method: 'POST',
-    }),
-
   deleteFish: (fishId: string, userId: string, gamemode: string): Promise<{ message: string }> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish/delete/${encodeURIComponent(fishId)}?gamemode=${encodeURIComponent(gamemode)}`, {
       method: 'DELETE',
     }),
 
-  deleteFishV2: (fishId: string, userId: string, gamemode: string) =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/fish/delete/${encodeURIComponent(fishId)}?gamemode=${encodeURIComponent(gamemode)}`, {
-      method: 'DELETE',
-    }),
 
   deleteCrab: (crabId: string, userId: string, gamemode: string): Promise<{ message: string }> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab/delete?gamemode=${encodeURIComponent(gamemode)}&count=1`, {
       method: 'DELETE',
     }),
 
-  deleteCrabV2: (userId: string, gamemode: string, count: number) =>
-    apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab/delete?gamemode=${encodeURIComponent(gamemode)}&count=${encodeURIComponent(String(count))}`, {
-      method: 'DELETE',
-    }),
 };

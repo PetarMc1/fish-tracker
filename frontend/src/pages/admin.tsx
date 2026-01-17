@@ -9,6 +9,7 @@ import {
   FaDatabase,
   FaFish,
   FaSpider,
+  FaCopy,
   FaKey,
   FaUser,
   FaSearch,
@@ -114,6 +115,31 @@ export default function AdminPage() {
   const [userCrabs, setUserCrabs] = useState<CrabEntry[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
+
+  type Notification = { id: number; type: "success" | "error" | "info"; message: string };
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const showNotification = (type: Notification["type"], message: string, timeout = 6000) => {
+    const id = Date.now() + Math.floor(Math.random() * 1000);
+    setNotifications((s) => [...s, { id, type, message }]);
+    setTimeout(() => {
+      setNotifications((s) => s.filter((n) => n.id !== id));
+    }, timeout);
+  };
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    message: string;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
+  const showConfirm = (message: string, onConfirm: () => void | Promise<void>) => {
+    setConfirmState({ open: true, message, onConfirm });
+  };
+
+  const [secretModal, setSecretModal] = useState<{
+    open: boolean;
+    value: string;
+    title?: string;
+  } | null>(null);
+  const showSecretModal = (value: string, title = "Secret") => setSecretModal({ open: true, value, title });
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -359,7 +385,7 @@ export default function AdminPage() {
     if (!selectedUser || !fishForm.name.trim()) return;
 
     try {
-      await adminApi.createFishV2(selectedUser, selectedGamemode, [
+      await adminApi.createFish(selectedUser, selectedGamemode, [
         {
           name: fishForm.name.trim(),
           rarity: fishForm.rarity,
@@ -367,10 +393,11 @@ export default function AdminPage() {
       ]);
       setFishForm({ name: "", rarity: 1 });
       await loadUserData();
+      showNotification("success", "Fish added successfully.");
     } catch (error) {
-      alert(
-        "Failed to add fish: " +
-          (error instanceof Error ? error.message : "Unknown error")
+      showNotification(
+        "error",
+        "Failed to add fish: " + (error instanceof Error ? error.message : "Unknown error")
       );
     }
   };
@@ -381,10 +408,11 @@ export default function AdminPage() {
     try {
       await adminApi.deleteFish(fishId, selectedUser, selectedGamemode);
       await loadUserData();
+      showNotification("success", "Fish removed successfully.");
     } catch (error) {
-      alert(
-        "Failed to remove fish: " +
-          (error instanceof Error ? error.message : "Unknown error")
+      showNotification(
+        "error",
+        "Failed to remove fish: " + (error instanceof Error ? error.message : "Unknown error")
       );
     }
   };
@@ -396,10 +424,11 @@ export default function AdminPage() {
       await adminApi.createCrab(selectedUser, selectedGamemode, crabCount);
       setCrabCount(1);
       await loadUserData();
+      showNotification("success", `Added ${crabCount} crab${crabCount === 1 ? '' : 's'} successfully.`);
     } catch (error) {
-      alert(
-        "Failed to add crabs: " +
-          (error instanceof Error ? error.message : "Unknown error")
+      showNotification(
+        "error",
+        "Failed to add crabs: " + (error instanceof Error ? error.message : "Unknown error")
       );
     }
   };
@@ -410,35 +439,31 @@ export default function AdminPage() {
     try {
       await adminApi.deleteCrab(crabId, selectedUser, selectedGamemode);
       await loadUserData();
+      showNotification("success", "Crab removed successfully.");
     } catch (error) {
-      alert(
-        "Failed to remove crab: " +
-          (error instanceof Error ? error.message : "Unknown error")
+      showNotification(
+        "error",
+        "Failed to remove crab: " + (error instanceof Error ? error.message : "Unknown error")
       );
     }
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
-    try {
-      setDeletingUser(userId);
-      await adminApi.deleteUser(userId);
-      await loadUsers();
-    } catch (error) {
-      alert(
-        "Failed to delete user: " +
-          (error instanceof Error ? error.message : "Unknown error")
-      );
-    } finally {
-      setDeletingUser(null);
-    }
+    showConfirm("Are you sure you want to delete this user? This action cannot be undone.", async () => {
+      try {
+        setDeletingUser(userId);
+        await adminApi.deleteUser(userId);
+        await loadUsers();
+        showNotification("success", "User deleted successfully.");
+      } catch (error) {
+        showNotification(
+          "error",
+          "Failed to delete user: " + (error instanceof Error ? error.message : "Unknown error")
+        );
+      } finally {
+        setDeletingUser(null);
+      }
+    });
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -448,18 +473,16 @@ export default function AdminPage() {
     try {
       setCreatingUser(true);
       const result = await adminApi.createUser(createUserName, createUserPassword || undefined);
-      alert(
-        `User created successfully!\nUsername: ${result.name}\nPassword: ${result.userPassword}\nFernet Key: ${result.fernetKey}`
+      showNotification(
+        "success",
+        `User created successfully: ${result.name}. Password and fernet key are not displayed here for security.`
       );
       setCreateUserName("");
       setCreateUserPassword("");
       setShowCreateUser(false);
       await loadUsers();
     } catch (error) {
-      alert(
-        "Failed to create user: " +
-          (error instanceof Error ? error.message : "Unknown error")
-      );
+      showNotification("error", "Failed to create user: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setCreatingUser(false);
     }
@@ -474,14 +497,17 @@ export default function AdminPage() {
       // default role is 'admin' unless superadmin selected in form
       const roleSelect = (document.getElementById('create-admin-role') as HTMLSelectElement)?.value || 'admin';
       const role = roleSelect === 'superadmin' ? 'superadmin' : 'admin';
-      await adminApi.createAdminV2(createAdminUsername, createAdminPassword, role as 'admin' | 'superadmin');
-      alert(`Admin created successfully! Username: ${createAdminUsername} Role: ${role}`);
+      await adminApi.createAdmin(createAdminUsername, createAdminPassword, role as 'admin' | 'superadmin');
+      showNotification(
+        "success",
+        `Admin created successfully! Username: ${createAdminUsername} Role: ${role}`
+      );
       setCreateAdminUsername("");
       setCreateAdminPassword("");
       setShowCreateAdmin(false);
       await loadAdmins();
     } catch (error) {
-      alert("Failed to create admin: " + (error instanceof Error ? error.message : "Unknown error"));
+      showNotification("error", "Failed to create admin: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setCreatingAdmin(false);
     }
@@ -493,9 +519,9 @@ export default function AdminPage() {
       const user = await adminApi.getUserById(userId);
       setViewingUser(user);
     } catch (error) {
-      alert(
-        "Failed to load user details: " +
-          (error instanceof Error ? error.message : "Unknown error")
+      showNotification(
+        "error",
+        "Failed to load user details: " + (error instanceof Error ? error.message : "Unknown error")
       );
     } finally {
       setViewingUserLoading(false);
@@ -506,26 +532,21 @@ export default function AdminPage() {
     userId: string,
     type: "password" | "fernet" | "api-key"
   ) => {
-    if (!confirm(`Are you sure you want to reset this user's ${type}?`)) {
-      return;
-    }
-
-    try {
-      const result = await adminApi.resetUser(userId, type as any);
-      if (type === "password") {
-        alert(`Password reset successfully!\nNew password: ${result.newPassword}`);
-      } else if (type === "fernet") {
-        alert(`Fernet key reset successfully!\nNew key: ${result.newFernetKey}`);
-      } else if (type === "api-key") {
-        const key = (result && (result.newApiKey || result.apiKey)) || result.message || 'API key reset';
-        alert(`API key reset successfully!\nNew API Key: ${key}`);
+    showConfirm(`Are you sure you want to reset this user's ${type}?`, async () => {
+      try {
+        const result = await adminApi.resetUser(userId, type as any);
+        if (type === "password") {
+          showSecretModal(result.newPassword || "", "New Password");
+        } else if (type === "fernet") {
+          showNotification("success", "Fernet key reset successfully.");
+        } else if (type === "api-key") {
+          const key = (result && (((result as any).newApiKey ?? (result as any).apiKey))) || result.message || 'API key reset';
+          showSecretModal(key, "New API Key");
+        }
+      } catch (error) {
+        showNotification("error", `Failed to reset ${type}: ` + (error instanceof Error ? error.message : "Unknown error"));
       }
-    } catch (error) {
-      alert(
-        `Failed to reset ${type}: ` +
-          (error instanceof Error ? error.message : "Unknown error")
-      );
-    }
+    });
   };
 
   const renderStatsTab = () => (
@@ -892,14 +913,16 @@ export default function AdminPage() {
                 </div>
                 {currentAdmin?.role === 'superadmin' && (
                   <button
-                    onClick={async () => {
-                      if (!confirm(`Delete admin ${a.name}?`)) return;
-                      try {
-                        await adminApi.deleteAdminV2(a.id);
-                        await loadAdmins();
-                      } catch (err) {
-                        alert('Failed to delete admin: ' + (err instanceof Error ? err.message : 'Unknown'));
-                      }
+                    onClick={() => {
+                      showConfirm(`Delete admin ${a.name}?`, async () => {
+                        try {
+                          await adminApi.deleteAdmin(a.id);
+                          await loadAdmins();
+                          showNotification('success', `Admin ${a.name} deleted successfully.`);
+                        } catch (err) {
+                          showNotification('error', 'Failed to delete admin: ' + (err instanceof Error ? err.message : 'Unknown'));
+                        }
+                      });
                     }}
                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
                   >
@@ -1202,6 +1225,79 @@ export default function AdminPage() {
   if (!isLoggedIn) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans flex items-center justify-center px-6 py-16">
+        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+          <AnimatePresence>
+            {notifications.map((n) => (
+              <motion.div
+                key={n.id}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className={`pointer-events-auto px-4 py-2 rounded shadow text-white max-w-xs break-words ${
+                  n.type === "success" ? "bg-green-600" : n.type === "error" ? "bg-red-600" : "bg-blue-600"
+                }`}
+              >
+                {n.message}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+        {confirmState?.open && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-70">
+            <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
+              <p className="text-white mb-4">{confirmState.message}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmState(null)}
+                  className="flex-1 px-4 py-2 bg-neutral-600 text-white rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const cb = confirmState.onConfirm;
+                    setConfirmState(null);
+                    try {
+                      cb();
+                    } catch (e) {
+                      // ignore
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {secretModal?.open && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-70">
+            <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-xl font-bold text-white mb-3">{secretModal.title || "Secret"}</h3>
+              <p className="text-white break-words mb-4">{secretModal.value}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(secretModal.value || "");
+                    showNotification("success", "Copied to clipboard");
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                >
+                  <FaCopy />
+                  Copy
+                </button>
+                <button
+                  onClick={() => setSecretModal(null)}
+                  className="px-4 py-2 bg-neutral-600 text-white rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1253,6 +1349,77 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans">
+      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
+        <AnimatePresence>
+          {notifications.map((n) => (
+            <motion.div
+              key={n.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className={`pointer-events-auto px-4 py-2 rounded shadow text-white max-w-xs break-words ${
+                n.type === "success" ? "bg-green-600" : n.type === "error" ? "bg-red-600" : "bg-blue-600"
+              }`}
+            >
+              {n.message}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      {confirmState?.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-70">
+          <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
+            <p className="text-white mb-4">{confirmState.message}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmState(null)}
+                className="flex-1 px-4 py-2 bg-neutral-600 text-white rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const cb = confirmState.onConfirm;
+                  setConfirmState(null);
+                  try {
+                    cb();
+                  } catch (e) {}
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {secretModal?.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-70">
+          <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-md">
+            <h3 className="text-xl font-bold text-white mb-3">{secretModal.title || "Secret"}</h3>
+            <p className="text-white break-words mb-4">{secretModal.value}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(secretModal.value || "");
+                  showNotification("success", "Copied to clipboard");
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
+              >
+                <FaCopy />
+                Copy
+              </button>
+              <button
+                onClick={() => setSecretModal(null)}
+                className="px-4 py-2 bg-neutral-600 text-white rounded-lg"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -1354,7 +1521,7 @@ export default function AdminPage() {
             <h3 className="text-xl font-bold text-white mb-4">
               Create New User
             </h3>
-            <form onSubmit={handleCreateAdmin}>
+            <form onSubmit={handleCreateUser}>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -1368,13 +1535,9 @@ export default function AdminPage() {
                   type="password"
                   placeholder="Password (optional - auto-generated if empty)"
                   value={createUserPassword}
-                  onChange={(e) => setCreateUserPassword(e.target.value)}>
-                <select id="create-admin-role" className="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none">
-                  <option value="admin">admin</option>
-                  <option value="superadmin">superadmin</option>
-                </select>
+                  onChange={(e) => setCreateUserPassword(e.target.value)}
                   className="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                </input>
+                />
                 <div className="flex gap-3">
                   <button
                     type="button"
