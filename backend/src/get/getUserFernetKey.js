@@ -51,7 +51,7 @@ async function getUserFernetKey(req, res) {
 
   try {
     await client.connect();
-    const db = client.db("core_users_data");
+    const db = client.db("fishtracker");
     const users = db.collection("users");
 
     const user = await users.findOne({ name: userName, userPassword: password });

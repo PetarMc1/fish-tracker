@@ -91,7 +91,7 @@ async function rateLimitWrapper(req, res, next) {
     try {
       const client = new MongoClient(MONGO_URI);
       await client.connect();
-      const db = client.db('core_users_data');
+      const db = client.db('fishtracker');
       const apiKey = await db.collection('api_keys').findOne({ key });
       await client.close();
       if (apiKey) return next();

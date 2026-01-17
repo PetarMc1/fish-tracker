@@ -7,7 +7,7 @@ class UserModel {
   static async findById(id) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const user = await db.collection('users').findOne({ id });
     await client.close();
     return user;
@@ -16,7 +16,7 @@ class UserModel {
   static async findByName(name) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const user = await db.collection('users').findOne({ name });
     await client.close();
     return user;
@@ -25,7 +25,7 @@ class UserModel {
   static async findAll(query = {}, options = {}) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const users = await db.collection('users').find(query, options).toArray();
     await client.close();
     return users;
@@ -34,7 +34,7 @@ class UserModel {
   static async count(query = {}) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const count = await db.collection('users').countDocuments(query);
     await client.close();
     return count;
@@ -43,7 +43,7 @@ class UserModel {
   static async updateById(id, updateData) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const result = await db.collection('users').updateOne({ id }, { $set: updateData });
     await client.close();
     return result;
@@ -52,7 +52,7 @@ class UserModel {
   static async deleteById(id) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const result = await db.collection('users').deleteOne({ id });
     await client.close();
     return result;

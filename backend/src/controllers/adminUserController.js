@@ -91,7 +91,7 @@ async function createUser(req, res) {
     const client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
 
-    const db = client.db("core_users_data");
+    const db = client.db("fishtracker");
     const users = db.collection("users");
 
     await users.insertOne({
@@ -170,7 +170,7 @@ async function createUserV2(req, res) {
     const client = new MongoClient(process.env.MONGO_URI);
     await client.connect();
 
-    const db = client.db("core_users_data");
+    const db = client.db("fishtracker");
     const users = db.collection("users");
 
     await users.insertOne({
@@ -246,7 +246,7 @@ async function resetUserV2(req, res) {
       const client = new MongoClient(process.env.MONGO_URI);
       try {
         await client.connect();
-        const db = client.db("core_users_data");
+        const db = client.db("fishtracker");
         const apiKeys = db.collection('api_keys');
         await apiKeys.deleteMany({ userId: id });
         const newApiKey = crypto.randomBytes(24).toString('hex');
@@ -271,7 +271,7 @@ async function deleteUserV2(req, res) {
     const client = new MongoClient(process.env.MONGO_URI);
     try {
       await client.connect();
-      const db = client.db("core_users_data");
+      const db = client.db("fishtracker");
       await db.collection('api_keys').deleteMany({ userId: id });
     } finally {
       await client.close();

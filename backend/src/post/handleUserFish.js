@@ -61,8 +61,8 @@ async function handleFish(req, res) {
     try {
       await client.connect();
 
-      const coreDb = client.db("core_users_data");
-      const users = coreDb.collection("users");
+      const db = client.db('fishtracker');
+      const users = db.collection('users');
 
       const user = await users.findOne({ name: userName });
 
@@ -120,9 +120,8 @@ async function handleFish(req, res) {
         return;
       }
       
-      const userDataDbName = `user_data_fish_${gamemode}`;
-      const userDataDb = client.db(userDataDbName);
-      const fishCollection = userDataDb.collection(user.name);
+      const collName = `fish_${user.name}_${gamemode}`;
+      const fishCollection = db.collection(collName);
 
       const result = await fishCollection.insertOne(data);
 

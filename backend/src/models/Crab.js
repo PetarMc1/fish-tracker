@@ -12,8 +12,9 @@ class CrabModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const crabDb = client.db(`user_data_crab_${gamemode}`);
-    const crabs = await crabDb.collection(userName).find({}, { projection: { fish: 1, _id: 1, timestamp: 1 } }).toArray();
+    const db = client.db('fishtracker');
+    const collName = `crab_${userName}_${gamemode}`;
+    const crabs = await db.collection(collName).find({}, { projection: { fish: 1, _id: 1, timestamp: 1 } }).toArray();
     await client.close();
 
     return crabs.map(doc => ({
@@ -30,17 +31,16 @@ class CrabModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const coreDb = client.db('core_users_data');
-    const users = await coreDb.collection('users').find({}).toArray();
-    
+    const db = client.db('fishtracker');
+    const users = await db.collection('users').find({}).toArray();
+
     let total = 0;
-    const crabDb = client.db(`user_data_crab_${gamemode}`);
-    
     for (const user of users) {
-      const count = await crabDb.collection(user.name).countDocuments({ fish: 'crab' });
+      const coll = `crab_${user.name}_${gamemode}`;
+      const count = await db.collection(coll).countDocuments({ fish: 'crab' });
       total += count;
     }
-    
+
     await client.close();
     return total;
   }
@@ -52,7 +52,8 @@ class CrabModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const crabDb = client.db(`user_data_crab_${gamemode}`);
+    const db = client.db('fishtracker');
+    const collName = `crab_${userName}_${gamemode}`;
     let _id;
     try {
       _id = new ObjectId(crabId);
@@ -60,7 +61,7 @@ class CrabModel {
       await client.close();
       return { deletedCount: 0 };
     }
-    const result = await crabDb.collection(userName).deleteOne({ _id, fish: 'crab' });
+    const result = await db.collection(collName).deleteOne({ _id, fish: 'crab' });
     await client.close();
     return result;
   }
@@ -77,16 +78,17 @@ class CrabModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const crabDb = client.db(`user_data_crab_${gamemode}`);
+    const db = client.db('fishtracker');
+    const collName = `crab_${userName}_${gamemode}`;
 
-    const docs = await crabDb.collection(userName).find({}, { projection: { _id: 1 } }).limit(numericCount).toArray();
+    const docs = await db.collection(collName).find({}, { projection: { _id: 1 } }).limit(numericCount).toArray();
     if (docs.length === 0) {
       await client.close();
       return { deletedCount: 0 };
     }
 
     const ids = docs.map(d => d._id);
-    const result = await crabDb.collection(userName).deleteMany({ _id: { $in: ids } });
+    const result = await db.collection(collName).deleteMany({ _id: { $in: ids } });
     await client.close();
     return result;
   }
@@ -98,11 +100,12 @@ class CrabModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const crabDb = client.db(`user_data_crab_${gamemode}`);
-    
+    const db = client.db('fishtracker');
+    const collName = `crab_${userName}_${gamemode}`;
+
     const formattedCrabData = crabData.map(() => ({ fish: 'crab' }));
-    
-    const result = await crabDb.collection(userName).insertMany(formattedCrabData);
+
+    const result = await db.collection(collName).insertMany(formattedCrabData);
     await client.close();
     return result;
   }
