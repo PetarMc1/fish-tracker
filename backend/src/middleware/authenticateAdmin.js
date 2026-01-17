@@ -17,7 +17,7 @@ async function authenticateAdmin(req, res, next) {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const admin = await db.collection('admins').findOne({ username: decoded.username });
     await client.close();
 

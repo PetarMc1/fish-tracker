@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const { MongoClient } = require('mongodb');
@@ -14,7 +13,7 @@ if (!process.env.MONGO_URI) {
   const client = new MongoClient(process.env.MONGO_URI);
   try {
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const admins = db.collection('admins');
 
     const existing = await admins.findOne({ username });

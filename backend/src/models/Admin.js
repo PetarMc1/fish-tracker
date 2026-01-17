@@ -7,7 +7,7 @@ class AdminModel {
   static async findByUsername(username) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const admin = await db.collection('admins').findOne({ username });
     await client.close();
     return admin;
@@ -16,7 +16,7 @@ class AdminModel {
   static async create(adminData) {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const result = await db.collection('admins').insertOne({
       ...adminData,
       createdAt: new Date()
@@ -28,7 +28,7 @@ class AdminModel {
   static async findAll() {
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const db = client.db('core_users_data');
+    const db = client.db('fishtracker');
     const admins = await db.collection('admins').find({}).toArray();
     await client.close();
     return admins;
@@ -38,7 +38,7 @@ class AdminModel {
     const client = new MongoClient(MONGO_URI);
     try {
       await client.connect();
-      const db = client.db('core_users_data');
+      const db = client.db('fishtracker');
       const _id = typeof id === 'string' ? new ObjectId(id) : id;
       const result = await db.collection('admins').deleteOne({ _id });
       return result;

@@ -64,8 +64,8 @@ async function handleUserCrabs(req, res) {
     try {
       await client.connect();
 
-      const coreDb = client.db("core_users_data");
-      const usersCol = coreDb.collection("users");
+      const db = client.db('fishtracker');
+      const usersCol = db.collection('users');
       const user = await usersCol.findOne({ name: userName });
 
       if (!user || !user.name || !user.fernetKey) {
@@ -111,9 +111,8 @@ async function handleUserCrabs(req, res) {
         return;
       }
 
-      const crabDbName = `user_data_crab_${gamemode}`;
-      const crabDb = client.db(crabDbName);
-      const crabCollection = crabDb.collection(user.name);
+      const collName = `crab_${user.name}_${gamemode}`;
+      const crabCollection = db.collection(collName);
 
       const result = await crabCollection.insertOne(data);
 

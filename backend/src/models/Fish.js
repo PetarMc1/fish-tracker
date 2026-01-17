@@ -24,8 +24,9 @@ class FishModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const fishDb = client.db(`user_data_fish_${gamemode}`);
-    const fish = await fishDb.collection(userName).find({}, { projection: { fish: 1, rarity: 1, _id: 1, timestamp: 1 } }).toArray();
+    const db = client.db('fishtracker');
+    const collName = `fish_${userName}_${gamemode}`;
+    const fish = await db.collection(collName).find({}, { projection: { fish: 1, rarity: 1, _id: 1, timestamp: 1 } }).toArray();
     await client.close();
 
     return fish.map(doc => ({
@@ -43,17 +44,16 @@ class FishModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const coreDb = client.db('core_users_data');
-    const users = await coreDb.collection('users').find({}).toArray();
-    
+    const db = client.db('fishtracker');
+    const users = await db.collection('users').find({}).toArray();
+
     let total = 0;
-    const fishDb = client.db(`user_data_fish_${gamemode}`);
-    
     for (const user of users) {
-      const count = await fishDb.collection(user.name).countDocuments();
+      const coll = `fish_${user.name}_${gamemode}`;
+      const count = await db.collection(coll).countDocuments();
       total += count;
     }
-    
+
     await client.close();
     return total;
   }
@@ -65,7 +65,8 @@ class FishModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const fishDb = client.db(`user_data_fish_${gamemode}`);
+    const db = client.db('fishtracker');
+    const collName = `fish_${userName}_${gamemode}`;
     let _id;
     try {
       _id = new ObjectId(fishId);
@@ -73,7 +74,7 @@ class FishModel {
       await client.close();
       return { deletedCount: 0 };
     }
-    const result = await fishDb.collection(userName).deleteOne({ _id });
+    const result = await db.collection(collName).deleteOne({ _id });
     await client.close();
     return result;
   }
@@ -85,8 +86,9 @@ class FishModel {
 
     const client = new MongoClient(MONGO_URI);
     await client.connect();
-    const fishDb = client.db(`user_data_fish_${gamemode}`);
-    const result = await fishDb.collection(userName).insertMany(fishData);
+    const db = client.db('fishtracker');
+    const collName = `fish_${userName}_${gamemode}`;
+    const result = await db.collection(collName).insertMany(fishData);
     await client.close();
     return result;
   }
