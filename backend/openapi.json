@@ -184,7 +184,7 @@
         "responses": { "200": { "description": "User" }, "404": { "description": "Not found" } }
       }
     },
-    "/v2/admin/user/delete/{id}": {
+    "/v2/admin/user/{id}/delete": {
       "delete": {
         "tags": ["admin"],
         "summary": "Delete user (v2) - superadmin only",

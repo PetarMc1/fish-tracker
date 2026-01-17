@@ -144,7 +144,7 @@ app.delete('/v2/admin/user/:id/delete', requireRole('superadmin'), deleteUserV2)
 app.get('/v2/admin/user/:id/fish', getAdminUserFishV2);
 app.get('/v2/admin/user/:id/crab', getAdminUserCrabsV2);
 app.delete('/v2/admin/user/:id/fish/delete/:fishId', deleteFishV2);
-app.delete('/v2/admin/user/:id/crab/delete/:crabId', deleteCrabV2);
+app.delete('/v2/admin/user/:id/crab/delete', deleteCrabV2);
 app.post('/v2/admin/user/:id/fish/create', createFishV2);
 app.post('/v2/admin/user/:id/crab/create', createCrabV2);
 app.post('/v2/admin/admins/create', requireRole('superadmin'), createAdminV2);
