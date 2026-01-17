@@ -9,6 +9,7 @@ import {
   FaDatabase,
   FaFish,
   FaSpider,
+  FaKey,
   FaUser,
   FaSearch,
   FaPlus,
@@ -96,6 +97,8 @@ export default function AdminPage() {
     username: string;
     role: string;
   } | null>(null);
+  const [admins, setAdmins] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [adminsLoading, setAdminsLoading] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [createAdminUsername, setCreateAdminUsername] = useState("");
   const [createAdminPassword, setCreateAdminPassword] = useState("");
@@ -130,6 +133,7 @@ export default function AdminPage() {
       loadDataUsers();
     } else if (activeTab === "admins") {
       loadCurrentAdmin();
+      loadAdmins();
     }
   }, [activeTab, refreshTrigger]);
 
@@ -202,11 +206,7 @@ export default function AdminPage() {
     try {
       setUsersLoading(true);
       setUsersError(null);
-      const data = await adminApi.getUsers(
-        currentPage,
-        10,
-        usersSearch || undefined
-      );
+      const data = await adminApi.getUsers(1, 10, usersSearch || undefined);
       setUsers(data.users);
       setUsersPagination(data.pagination);
     } catch (error) {
@@ -296,10 +296,22 @@ export default function AdminPage() {
     }
   };
 
+  const loadAdmins = async () => {
+    try {
+      setAdminsLoading(true);
+      const data = await adminApi.getAdmins();
+      setAdmins(data.admins || []);
+    } catch (error) {
+      setAdminError(error instanceof Error ? error.message : "Failed to load admins");
+    } finally {
+      setAdminsLoading(false);
+    }
+  };
+
   const loadDataUsers = async () => {
     try {
       const data = await adminApi.getUsers(1, 100);
-      setDataUsers(data.users);
+      setDataUsers(data.users || []);
       setDataError(null);
     } catch (error) {
       let errorMessage =
@@ -347,7 +359,7 @@ export default function AdminPage() {
     if (!selectedUser || !fishForm.name.trim()) return;
 
     try {
-      await adminApi.createFish(selectedUser, selectedGamemode, [
+      await adminApi.createFishV2(selectedUser, selectedGamemode, [
         {
           name: fishForm.name.trim(),
           rarity: fishForm.rarity,
@@ -435,10 +447,7 @@ export default function AdminPage() {
 
     try {
       setCreatingUser(true);
-      const result = await adminApi.createUser(
-        createUserName,
-        createUserPassword || undefined
-      );
+      const result = await adminApi.createUser(createUserName, createUserPassword || undefined);
       alert(
         `User created successfully!\nUsername: ${result.name}\nPassword: ${result.userPassword}\nFernet Key: ${result.fernetKey}`
       );
@@ -462,21 +471,17 @@ export default function AdminPage() {
 
     try {
       setCreatingAdmin(true);
-      const result = await adminApi.createAdmin(
-        createAdminUsername,
-        createAdminPassword
-      );
-      alert(
-        `Admin created successfully!\nUsername: ${result.username}\nRole: ${result.role}`
-      );
+      // default role is 'admin' unless superadmin selected in form
+      const roleSelect = (document.getElementById('create-admin-role') as HTMLSelectElement)?.value || 'admin';
+      const role = roleSelect === 'superadmin' ? 'superadmin' : 'admin';
+      await adminApi.createAdminV2(createAdminUsername, createAdminPassword, role as 'admin' | 'superadmin');
+      alert(`Admin created successfully! Username: ${createAdminUsername} Role: ${role}`);
       setCreateAdminUsername("");
       setCreateAdminPassword("");
       setShowCreateAdmin(false);
+      await loadAdmins();
     } catch (error) {
-      alert(
-        "Failed to create admin: " +
-          (error instanceof Error ? error.message : "Unknown error")
-      );
+      alert("Failed to create admin: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setCreatingAdmin(false);
     }
@@ -499,22 +504,21 @@ export default function AdminPage() {
 
   const handleResetUser = async (
     userId: string,
-    type: "password" | "fernet"
+    type: "password" | "fernet" | "api-key"
   ) => {
     if (!confirm(`Are you sure you want to reset this user's ${type}?`)) {
       return;
     }
 
     try {
-      const result = await adminApi.resetUser(userId, type);
+      const result = await adminApi.resetUser(userId, type as any);
       if (type === "password") {
-        alert(
-          `Password reset successfully!\nNew password: ${result.newPassword}`
-        );
-      } else {
-        alert(
-          `Fernet key reset successfully!\nNew key: ${result.newFernetKey}`
-        );
+        alert(`Password reset successfully!\nNew password: ${result.newPassword}`);
+      } else if (type === "fernet") {
+        alert(`Fernet key reset successfully!\nNew key: ${result.newFernetKey}`);
+      } else if (type === "api-key") {
+        const key = (result && (result.newApiKey || result.apiKey)) || result.message || 'API key reset';
+        alert(`API key reset successfully!\nNew API Key: ${key}`);
       }
     } catch (error) {
       alert(
@@ -786,6 +790,13 @@ export default function AdminPage() {
                             <FaRedo />
                           </button>
                           <button
+                            onClick={() => handleResetUser(user.id, "api-key")}
+                            className="p-2 bg-purple-600 text-white rounded hover:bg-purple-500 transition"
+                            title="Reset API Key"
+                          >
+                            <FaKey />
+                          </button>
+                          <button
                             onClick={() => handleDeleteUser(user.id)}
                             disabled={deletingUser === user.id}
                             className="p-2 bg-red-600 text-white rounded hover:bg-red-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -865,6 +876,40 @@ export default function AdminPage() {
           <FaPlus />
           Create Admin
         </button>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold text-white mb-3">Admin Accounts</h3>
+        {adminsLoading ? (
+          <p className="text-neutral-400">Loading admins...</p>
+        ) : (
+          <div className="space-y-2">
+            {admins.map((a) => (
+              <div key={a.id} className="flex items-center justify-between bg-neutral-900 p-3 rounded">
+                <div>
+                  <div className="text-white font-medium">{a.name}</div>
+                  <div className="text-neutral-400 text-sm">{a.role}</div>
+                </div>
+                {currentAdmin?.role === 'superadmin' && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Delete admin ${a.name}?`)) return;
+                      try {
+                        await adminApi.deleteAdminV2(a.id);
+                        await loadAdmins();
+                      } catch (err) {
+                        alert('Failed to delete admin: ' + (err instanceof Error ? err.message : 'Unknown'));
+                      }
+                    }}
+                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    <FaTrash />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {currentAdmin && (
@@ -1309,7 +1354,7 @@ export default function AdminPage() {
             <h3 className="text-xl font-bold text-white mb-4">
               Create New User
             </h3>
-            <form onSubmit={handleCreateUser}>
+            <form onSubmit={handleCreateAdmin}>
               <div className="space-y-4">
                 <input
                   type="text"
@@ -1323,9 +1368,13 @@ export default function AdminPage() {
                   type="password"
                   placeholder="Password (optional - auto-generated if empty)"
                   value={createUserPassword}
-                  onChange={(e) => setCreateUserPassword(e.target.value)}
+                  onChange={(e) => setCreateUserPassword(e.target.value)}>
+                <select id="create-admin-role" className="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white focus:outline-none">
+                  <option value="admin">admin</option>
+                  <option value="superadmin">superadmin</option>
+                </select>
                   className="w-full px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                </input>
                 <div className="flex gap-3">
                   <button
                     type="button"
@@ -1384,6 +1433,12 @@ export default function AdminPage() {
                 className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
               >
                 Reset Fernet Key
+              </button>
+              <button
+                onClick={() => handleResetUser(viewingUser.id, "api-key")}
+                className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+              >
+                Reset API Key
               </button>
               <button
                 onClick={() => setViewingUser(null)}
