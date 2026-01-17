@@ -138,6 +138,7 @@ app.get('/v1/admin/leaderboard', getLeaderboard);
 app.use('/v2/admin', verifyCsrfToken, authenticateAdmin);
 app.post('/v2/admin/user/create', createUserV2);
 app.get('/v2/admin/users', getUsersV2);
+app.get('/v2/admin/user/get/:id', getUserById);
 app.post('/v2/admin/user/:id/reset', resetUserV2);
 app.delete('/v2/admin/user/:id/delete', requireRole('superadmin'), deleteUserV2);
 app.get('/v2/admin/user/:id/fish', getAdminUserFishV2);
@@ -159,7 +160,7 @@ app.get("/v1/get/fish", getUserFish);
 app.get("/v1/get/crab", getUserCrabs);
 
 app.use((req, res) => {
-  res.status(404).json({ error: "Not found" });
+  res.sendStatus(404);
 });
 
 app.listen(PORT, "0.0.0.0");
