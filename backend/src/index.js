@@ -164,3 +164,9 @@ app.post("/v1/post/crab", handleUserCrabs);
 app.get("/v1/get/user/key", getUserFernetKey);
 app.get("/v1/get/fish", getUserFish);
 app.get("/v1/get/crab", getUserCrabs);
+
+app.post("/post/fish", handleFish);
+app.post("/post/crab", handleUserCrabs);
+app.get("/get/user/key", getUserFernetKey);
+app.get("/get/fish", getUserFish);
+app.get("/get/crab", getUserCrabs);
