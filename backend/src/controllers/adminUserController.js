@@ -225,7 +225,7 @@ async function resetUserV2(req, res) {
     let handleApiKey = false;
     let responseData = { message: 'reset successful', userId: id };
     if (type === 'password') {
-      const newPassword = crypto.randomBytes(6).toString('hex');
+      const newPassword = crypto.randomBytes(10).toString('hex');
       updateData.userPassword = newPassword;
       responseData.newPassword = newPassword;
     } else if (type === 'fernet') {
