@@ -1,8 +1,7 @@
 const jwt = require('jsonwebtoken');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
-const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 async function authenticateAdmin(req, res, next) {
@@ -15,11 +14,8 @@ async function authenticateAdmin(req, res, next) {
     const token = authHeader.substring(7);
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
+    const db = mongoose.connection.db;
     const admin = await db.collection('admins').findOne({ username: decoded.username });
-    await client.close();
 
     if (!admin) {
       return res.status(401).json({ error: 'Admin not found' });

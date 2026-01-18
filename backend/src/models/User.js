@@ -1,62 +1,35 @@
-const { MongoClient } = require('mongodb');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-const MONGO_URI = process.env.MONGO_URI;
+const userSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  name: { type: String, required: true, index: true },
+  userPassword: { type: String, required: true },
+  fernetKey: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+}, { collection: 'users' });
 
-class UserModel {
-  static async findById(id) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const user = await db.collection('users').findOne({ id });
-    await client.close();
-    return user;
-  }
+userSchema.statics.findById = function(id) {
+  return this.findOne({ id }).exec();
+};
 
-  static async findByName(name) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const user = await db.collection('users').findOne({ name });
-    await client.close();
-    return user;
-  }
+userSchema.statics.findByName = function(name) {
+  return this.findOne({ name }).exec();
+};
 
-  static async findAll(query = {}, options = {}) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const users = await db.collection('users').find(query, options).toArray();
-    await client.close();
-    return users;
-  }
+userSchema.statics.findAll = function(query = {}, options = {}) {
+  return this.find(query, null, options).exec();
+};
 
-  static async count(query = {}) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const count = await db.collection('users').countDocuments(query);
-    await client.close();
-    return count;
-  }
+userSchema.statics.count = function(query = {}) {
+  return this.countDocuments(query).exec();
+};
 
-  static async updateById(id, updateData) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const result = await db.collection('users').updateOne({ id }, { $set: updateData });
-    await client.close();
-    return result;
-  }
+userSchema.statics.updateById = function(id, updateData) {
+  return this.updateOne({ id }, { $set: updateData }).exec();
+};
 
-  static async deleteById(id) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const result = await db.collection('users').deleteOne({ id });
-    await client.close();
-    return result;
-  }
-}
+userSchema.statics.deleteById = function(id) {
+  return this.deleteOne({ id }).exec();
+};
 
-module.exports = UserModel;
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);

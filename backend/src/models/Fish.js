@@ -1,9 +1,7 @@
-const { MongoClient, ObjectId } = require('mongodb');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-const MONGO_URI = process.env.MONGO_URI;
 const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
-
+const db = mongoose.connection.db;
 class FishModel {
   static mapRarity(rarity) {
     switch (rarity) {
@@ -22,12 +20,8 @@ class FishModel {
       throw new Error('Invalid gamemode');
     }
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
     const collName = `fish_${userName}_${gamemode}`;
     const fish = await db.collection(collName).find({}, { projection: { fish: 1, rarity: 1, _id: 1, timestamp: 1 } }).toArray();
-    await client.close();
 
     return fish.map(doc => ({
       id: doc._id.toString(),
@@ -42,9 +36,6 @@ class FishModel {
       throw new Error('Invalid gamemode');
     }
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
     const users = await db.collection('users').find({}).toArray();
 
     let total = 0;
@@ -54,7 +45,6 @@ class FishModel {
       total += count;
     }
 
-    await client.close();
     return total;
   }
 
@@ -63,19 +53,14 @@ class FishModel {
       throw new Error('Invalid gamemode');
     }
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
     const collName = `fish_${userName}_${gamemode}`;
     let _id;
     try {
-      _id = new ObjectId(fishId);
+      _id = mongoose.Types.ObjectId(fishId);
     } catch {
-      await client.close();
       return { deletedCount: 0 };
     }
     const result = await db.collection(collName).deleteOne({ _id });
-    await client.close();
     return result;
   }
 
@@ -84,12 +69,8 @@ class FishModel {
       throw new Error('Invalid gamemode');
     }
 
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
     const collName = `fish_${userName}_${gamemode}`;
     const result = await db.collection(collName).insertMany(fishData);
-    await client.close();
     return result;
   }
 }

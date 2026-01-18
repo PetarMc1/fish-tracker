@@ -1,9 +1,5 @@
 require("dotenv").config();
-const { MongoClient } = require("mongodb");
-
-const uri = process.env.MONGO_URI;
-
-if (!uri) throw new Error("MONGO_URI is not set in environment");
+const mongoose = require('mongoose');
 
 async function getUserFernetKey(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -47,11 +43,8 @@ async function getUserFernetKey(req, res) {
     return;
   }
 
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
-    const db = client.db("fishtracker");
+    const db = mongoose.connection.db;
     const users = db.collection("users");
 
     const user = await users.findOne({ name: userName, userPassword: password });
@@ -66,8 +59,6 @@ async function getUserFernetKey(req, res) {
   } catch {
     res.writeHead(500, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Database query failed" }));
-  } finally {
-    await client.close();
   }
 }
 

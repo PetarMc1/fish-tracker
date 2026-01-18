@@ -6,8 +6,8 @@ const swaggerUi = require("swagger-ui-express");
 const fs = require("fs");
 const path = require("path");
 const { verifyCsrfToken, generateCSRFToken } = require("./middleware/csrfProtection");
-const { MongoClient } = require('mongodb');
-const MONGO_URI = process.env.MONGO_URI;
+const mongoose = require('mongoose');
+const { connectDB } = require('./config/db');
 const { getStatus } = require("./get/getStatus");
 const { handleFish } = require("./post/handleUserFish");
 const { handleUserCrabs } = require("./post/handleUserCrabs");
@@ -63,12 +63,11 @@ async function rateLimitWrapper(req, res, next) {
   if (origin && allowedOrigins.includes(origin)) return next();
   if (key) {
     try {
-      const client = new MongoClient(MONGO_URI);
-      await client.connect();
-      const db = client.db('fishtracker');
-      const apiKey = await db.collection('api_keys').findOne({ key });
-      await client.close();
-      if (apiKey) return next();
+      const db = mongoose.connection.db;
+      if (db) {
+        const apiKey = await db.collection('api_keys').findOne({ key });
+        if (apiKey) return next();
+      }
     } catch (err) {
       console.error('Error checking API key bypass:', err.message || err);
     }
@@ -76,6 +75,8 @@ async function rateLimitWrapper(req, res, next) {
 
   return publicLimiter(req, res, next);
 }
+
+connectDB()
 
 app.get("/demo/fish", getDemoFish);
 app.get("/demo/crab", getDemoCrabs);
@@ -132,4 +133,4 @@ app.get("/v1/get/crab", getUserCrabs);
 
 app.use((req, res) => res.status(404).json({ error: "Not found" }));
 
-app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`))

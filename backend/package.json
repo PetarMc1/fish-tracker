@@ -22,7 +22,7 @@
     "express-rate-limit": "^8.2.1",
     "fernet": "^0.3.3",
     "jsonwebtoken": "^9.0.3",
-    "mongodb": "^7.0.0",
+    "mongoose": "^9.1.4",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {

@@ -1,11 +1,6 @@
 require("dotenv").config();
-const { MongoClient } = require("mongodb");
+const mongoose = require('mongoose');
 const Fernet = require("fernet");
-
-const uri = process.env.MONGO_URI;
-if (!uri) {
-  throw new Error("MONGO_URI is not set in your environment variables.");
-}
 
 const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
@@ -56,12 +51,8 @@ async function handleFish(req, res) {
     const rawBody = Buffer.concat(bodyChunks);
     const encryptedString = rawBody.toString("utf-8");
 
-    const client = new MongoClient(uri);
-
     try {
-      await client.connect();
-
-      const db = client.db('fishtracker');
+      const db = mongoose.connection.db;
       const users = db.collection('users');
 
       const user = await users.findOne({ name: userName });
@@ -121,7 +112,7 @@ async function handleFish(req, res) {
       }
       
       const collName = `fish_${user.name}_${gamemode}`;
-      const fishCollection = db.collection(collName);
+      const fishCollection = mongoose.connection.db.collection(collName);
 
       const result = await fishCollection.insertOne(data);
 

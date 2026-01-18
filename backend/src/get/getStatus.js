@@ -1,9 +1,5 @@
 require("dotenv").config();
-const { MongoClient } = require("mongodb");
-
-const uri = process.env.MONGO_URI;
-
-if (!uri) throw new Error("MONGO_URI is not set in environment");
+const mongoose = require('mongoose');
 
 const startTime = Date.now();
 
@@ -17,19 +13,14 @@ async function getStatus(req, res) {
   }
 
   let dbStatus = "disconnected";
-  const client = new MongoClient(uri);
-
   try {
-    await client.connect();
-
-    const adminDb = client.db("admin");
-    await adminDb.command({ ping: 1 });
-
-    dbStatus = "connected";
+    if (mongoose.connection && mongoose.connection.db) {
+      const adminDb = mongoose.connection.db.admin();
+      await adminDb.ping();
+      dbStatus = "connected";
+    }
   } catch {
     dbStatus = "disconnected";
-  } finally {
-    await client.close();
   }
 
   res.writeHead(200, { "Content-Type": "application/json" });

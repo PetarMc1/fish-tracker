@@ -1,51 +1,23 @@
-const { MongoClient, ObjectId } = require('mongodb');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-const MONGO_URI = process.env.MONGO_URI;
+const adminSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true, index: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['admin', 'superadmin'], required: true },
+  createdAt: { type: Date, default: Date.now }
+}, { collection: 'admins' });
 
-class AdminModel {
-  static async findByUsername(username) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const admin = await db.collection('admins').findOne({ username });
-    await client.close();
-    return admin;
-  }
+adminSchema.statics.findByUsername = function(username) {
+  return this.findOne({ username }).exec();
+};
 
-  static async create(adminData) {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const result = await db.collection('admins').insertOne({
-      ...adminData,
-      createdAt: new Date()
-    });
-    await client.close();
-    return result;
-  }
+adminSchema.statics.findAll = function() {
+  return this.find({}).exec();
+};
 
-  static async findAll() {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    const db = client.db('fishtracker');
-    const admins = await db.collection('admins').find({}).toArray();
-    await client.close();
-    return admins;
-  }
+adminSchema.statics.deleteById = function(id) {
+  const _id = typeof id === 'string' ? mongoose.Types.ObjectId(id) : id;
+  return this.deleteOne({ _id }).exec();
+};
 
-  static async deleteById(id) {
-    const client = new MongoClient(MONGO_URI);
-    try {
-      await client.connect();
-      const db = client.db('fishtracker');
-      const _id = typeof id === 'string' ? new ObjectId(id) : id;
-      const result = await db.collection('admins').deleteOne({ _id });
-      return result;
-    } finally {
-      await client.close();
-    }
-  }
-}
-
-module.exports = AdminModel;
+module.exports = mongoose.models.Admin || mongoose.model('Admin', adminSchema);

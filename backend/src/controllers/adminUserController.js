@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 require('dotenv').config();
 const UserModel = require('../models/User');
 
@@ -88,11 +88,8 @@ async function createUser(req, res) {
     const randomId = crypto.randomBytes(9).toString('base64url');
     const fernetKey = crypto.randomBytes(32).toString('base64');
 
-    const client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-
-    const db = client.db("fishtracker");
-    const users = db.collection("users");
+    const db = mongoose.connection.db;
+    const users = db.collection('users');
 
     await users.insertOne({
       name,
@@ -101,8 +98,6 @@ async function createUser(req, res) {
       fernetKey,
       createdAt: new Date(),
     });
-
-    await client.close();
 
     return res.status(201).json({ name, id: randomId, userPassword, fernetKey });
   } catch (error) {
@@ -167,11 +162,8 @@ async function createUserV2(req, res) {
     const randomId = crypto.randomBytes(9).toString('base64url');
     const fernetKey = crypto.randomBytes(32).toString('base64');
 
-    const client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-
-    const db = client.db("fishtracker");
-    const users = db.collection("users");
+    const db = mongoose.connection.db;
+    const users = db.collection('users');
 
     await users.insertOne({
       name,
@@ -187,8 +179,6 @@ async function createUserV2(req, res) {
       userId: randomId,
       createdAt: new Date(),
     });
-
-    await client.close();
 
     return res.status(201).json({ name, id: randomId, userPassword, fernetKey, apiKey });
   } catch (error) {
@@ -243,18 +233,12 @@ async function resetUserV2(req, res) {
     }
 
     if (handleApiKey) {
-      const client = new MongoClient(process.env.MONGO_URI);
-      try {
-        await client.connect();
-        const db = client.db("fishtracker");
-        const apiKeys = db.collection('api_keys');
-        await apiKeys.deleteMany({ userId: id });
-        const newApiKey = crypto.randomBytes(24).toString('hex');
-        await apiKeys.insertOne({ key: newApiKey, userId: id, createdAt: new Date() });
-        responseData.newApiKey = newApiKey;
-      } finally {
-        await client.close();
-      }
+      const db = mongoose.connection.db;
+      const apiKeys = db.collection('api_keys');
+      await apiKeys.deleteMany({ userId: id });
+      const newApiKey = crypto.randomBytes(24).toString('hex');
+      await apiKeys.insertOne({ key: newApiKey, userId: id, createdAt: new Date() });
+      responseData.newApiKey = newApiKey;
     }
 
     res.json(responseData);
@@ -268,14 +252,8 @@ async function deleteUserV2(req, res) {
     const { id } = req.params;
     const result = await UserModel.deleteById(id);
     if (result.deletedCount === 0) return res.status(404).json({ error: 'User not found' });
-    const client = new MongoClient(process.env.MONGO_URI);
-    try {
-      await client.connect();
-      const db = client.db("fishtracker");
-      await db.collection('api_keys').deleteMany({ userId: id });
-    } finally {
-      await client.close();
-    }
+    const db = mongoose.connection.db;
+    await db.collection('api_keys').deleteMany({ userId: id });
     res.json({ message: 'User and associated API keys deleted successfully' });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
