@@ -76,7 +76,14 @@ const FishTrackerMod: React.FC = () => {
           <ul className="space-y-3 text-neutral-300">
             <li className="flex items-center gap-2">
               <span className="text-blue-400">•</span>
-              <span>Modrinth (Coming Soon)</span>
+              <a
+                href="https://modrinth.com/mod/fish-tracker-mod"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-all"
+              >
+                Modrinth
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <span className="text-blue-400">•</span>
