@@ -6,6 +6,7 @@ const swaggerUi = require("swagger-ui-express");
 const fs = require("fs");
 const path = require("path");
 const { verifyCsrfToken, generateCSRFToken } = require("./middleware/csrfProtection");
+const requestLogger = require('./middleware/requestLogger');
 const mongoose = require('mongoose');
 const { connectDB } = require('./config/db');
 const { getStatus } = require("./get/getStatus");
@@ -47,6 +48,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(requestLogger);
 
 
 const publicLimiter = rateLimit({
