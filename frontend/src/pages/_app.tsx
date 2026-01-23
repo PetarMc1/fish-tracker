@@ -1,6 +1,7 @@
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
 import Navbar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 import "@/styles/globals.css";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
@@ -11,6 +12,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       {!isAdminPage && <Navbar />}
       <Component {...pageProps}/>
+      {!isAdminPage && <Footer />}
     </>
   );
 }
