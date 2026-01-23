@@ -7,7 +7,6 @@ if (!uri) throw new Error("MONGO_URI is not set in environment");
 const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
 async function getUserFish(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
   if (req.method !== "GET") {
     res.writeHead(405, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Method not allowed" }));

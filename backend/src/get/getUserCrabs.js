@@ -4,8 +4,6 @@ const UserModel = require("../models/User");
 const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
 
 async function getUserCrabs(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
   if (req.method !== "GET") {
     res.writeHead(405, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Method not allowed" }));

@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 
 const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
-const db = mongoose.connection.db;
 class CrabModel {
   static async findByUserAndGamemode(userName, gamemode) {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+
+    const db = mongoose.connection.db;
+
 
     const collName = `crab_${userName}_${gamemode}`;
     const crabs = await db.collection(collName).find({}, { projection: { fish: 1, _id: 1, timestamp: 1 } }).toArray();
@@ -22,6 +24,9 @@ class CrabModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+
+    const db = mongoose.connection.db;
+
 
     const users = await db.collection('users').find({}).toArray();
 
@@ -39,6 +44,8 @@ class CrabModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
+
 
     const collName = `crab_${userName}_${gamemode}`;
     let _id;
@@ -60,6 +67,7 @@ class CrabModel {
     if (Number.isNaN(numericCount) || numericCount < 1) {
       throw new Error('Invalid count');
     }
+    const db = mongoose.connection.db;
 
     const collName = `crab_${userName}_${gamemode}`;
 
@@ -77,6 +85,7 @@ class CrabModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
 
     const collName = `crab_${userName}_${gamemode}`;
 

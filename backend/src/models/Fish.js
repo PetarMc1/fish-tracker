@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
-const db = mongoose.connection.db;
 class FishModel {
   static mapRarity(rarity) {
     switch (rarity) {
@@ -19,6 +18,7 @@ class FishModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
 
     const collName = `fish_${userName}_${gamemode}`;
     const fish = await db.collection(collName).find({}, { projection: { fish: 1, rarity: 1, _id: 1, timestamp: 1 } }).toArray();
@@ -35,6 +35,7 @@ class FishModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
 
     const users = await db.collection('users').find({}).toArray();
 
@@ -52,6 +53,7 @@ class FishModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
 
     const collName = `fish_${userName}_${gamemode}`;
     let _id;
@@ -68,6 +70,7 @@ class FishModel {
     if (!VALID_GAMEMODES.includes(gamemode)) {
       throw new Error('Invalid gamemode');
     }
+    const db = mongoose.connection.db;
 
     const collName = `fish_${userName}_${gamemode}`;
     const result = await db.collection(collName).insertMany(fishData);
