@@ -26,6 +26,8 @@ const { getUserFish: getAdminUserFish, getUserFishV2: getAdminUserFishV2, getUse
 const { getLeaderboard } = require("./controllers/adminActivityController");
 
 const app = express();
+// trust proxy so rate limiting works if the api is behind a proxy/load balancer
+app.set('trust proxy', true);
 const PORT = process.env.PORT || 10000;
 const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));
 
