@@ -4,11 +4,8 @@ const Fernet = require("fernet");
 const { isValidGamemode } = require('../utils/validators');
 
 async function handleUserCrabs(req, res) {
-  if (req.method !== "POST") {
-    res.writeHead(405, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-  }
+  const { ensureMethod, requireHeaderOrQuery } = require('../utils/requestChecks');
+  if (!ensureMethod(req, res, 'POST')) return;
 
   if (req.headers["content-type"] !== "application/octet-stream") {
     res.writeHead(400, { "Content-Type": "application/json" });
@@ -20,10 +17,8 @@ async function handleUserCrabs(req, res) {
 
   const url = new URL(req.url, `http://${req.headers.host}`);
   const userName = url.searchParams.get("name");
-  const gamemodeHeader = req.headers["x-gamemode"];
-  const gamemode = (typeof gamemodeHeader === "string" && gamemodeHeader.length > 0)
-    ? gamemodeHeader
-    : url.searchParams.get("gamemode");
+  const gamemode = requireHeaderOrQuery(req, res, 'x-gamemode', 'gamemode', 'Missing gamemode parameter');
+  if (!gamemode) return;
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });

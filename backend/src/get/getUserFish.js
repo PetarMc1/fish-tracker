@@ -7,14 +7,12 @@ if (!uri) throw new Error("MONGO_URI is not set in environment");
 const { isValidGamemode } = require('../utils/validators');
 
 async function getUserFish(req, res) {
-  if (req.method !== "GET") {
-    res.writeHead(405, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Method not allowed" }));
-    return;
-  }
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const userName = url.searchParams.get("name");
-  const gamemode = url.searchParams.get("gamemode");
+  const { ensureMethod, requireQueryParam } = require('../utils/requestChecks');
+  if (!ensureMethod(req, res, 'GET')) return;
+  const userName = requireQueryParam(req, res, 'name');
+  if (!userName) return;
+  const gamemode = requireQueryParam(req, res, 'gamemode');
+  if (!gamemode) return;
 
   if (!userName) {
     res.writeHead(400, { "Content-Type": "application/json" });
