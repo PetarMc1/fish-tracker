@@ -1,4 +1,3 @@
-require("dotenv").config();
 const mongoose = require('mongoose');
 const Fernet = require("fernet");
 
@@ -126,8 +125,6 @@ async function handleFish(req, res) {
     } catch {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Internal server error" }));
-    } finally {
-      await client.close();
     }
   });
 

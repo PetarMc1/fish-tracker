@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AdminModel = require('../models/Admin');
-require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 

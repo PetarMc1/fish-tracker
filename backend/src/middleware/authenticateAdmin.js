@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 

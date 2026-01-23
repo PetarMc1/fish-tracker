@@ -1,4 +1,3 @@
-require("dotenv").config();
 const CrabModel = require("../models/Crab");
 const UserModel = require("../models/User");
 
