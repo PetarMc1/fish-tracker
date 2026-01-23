@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:10000';
+const API_BASE = process.env.API_URL || 'http://localhost:10000';
 
 export interface AdminStats {
   totalUsers: number;

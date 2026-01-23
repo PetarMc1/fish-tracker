@@ -106,7 +106,6 @@ export default function AdminPage() {
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
 
-  // Logs
   const [logs, setLogs] = useState<any[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsError, setLogsError] = useState<string | null>(null);
@@ -169,6 +168,12 @@ export default function AdminPage() {
     title?: string;
   } | null>(null);
   const showSecretModal = (value: string, title = "Secret") => setSecretModal({ open: true, value, title });
+  const [createdUserCreds, setCreatedUserCreds] = useState<{
+    open: boolean;
+    username: string;
+    password: string;
+    apiKey: string;
+  } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -522,10 +527,12 @@ export default function AdminPage() {
     try {
       setCreatingUser(true);
       const result = await adminApi.createUser(createUserName, createUserPassword || undefined);
-      showNotification(
-        "success",
-        `User created successfully: ${result.name}. Password and fernet key are not displayed here for security.`
-      );
+      const username = (result && (result.name || createUserName)) || createUserName;
+      const password = (result && ((result as any).userPassword || createUserPassword)) || createUserPassword || '';
+      const apiKey = (result && ((result as any).fernetKey || (result as any).apiKey)) || '';
+
+      setCreatedUserCreds({ open: true, username, password: password || '', apiKey: apiKey || '' });
+
       setCreateUserName("");
       setCreateUserPassword("");
       setShowCreateUser(false);
@@ -543,7 +550,6 @@ export default function AdminPage() {
 
     try {
       setCreatingAdmin(true);
-      // default role is 'admin' unless superadmin selected in form
       const roleSelect = (document.getElementById('create-admin-role') as HTMLSelectElement)?.value || 'admin';
       const role = roleSelect === 'superadmin' ? 'superadmin' : 'admin';
       await adminApi.createAdmin(createAdminUsername, createAdminPassword, role as 'admin' | 'superadmin');
@@ -1471,7 +1477,6 @@ export default function AdminPage() {
                     try {
                       cb();
                     } catch (e) {
-                      // ignore
                     }
                   }}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg"
@@ -1627,6 +1632,55 @@ export default function AdminPage() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {createdUserCreds?.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-70">
+          <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-lg">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white">New User Credentials</h3>
+              <button onClick={() => setCreatedUserCreds(null)} className="text-neutral-400 hover:text-white">Close</button>
+            </div>
+
+            <p className="text-sm text-neutral-400 mt-2">Save these now — the password and API key will not be shown again.</p>
+
+            <div className="mt-4 space-y-4">
+              <div className="bg-neutral-900 p-3 rounded flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="text-sm text-neutral-400">Username</div>
+                  <div className="text-white font-mono break-words">{createdUserCreds.username}</div>
+                </div>
+                <div className="flex-shrink-0">
+                  <button onClick={() => { navigator.clipboard?.writeText(createdUserCreds.username || ''); showNotification('success','Copied username'); }} className="px-3 py-1 bg-blue-600 rounded">Copy</button>
+                </div>
+              </div>
+
+              <div className="bg-neutral-900 p-3 rounded flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="text-sm text-neutral-400">Password</div>
+                  <div className="text-white font-mono break-words">{createdUserCreds.password || '(none)'}</div>
+                </div>
+                <div className="flex-shrink-0">
+                  <button onClick={() => { navigator.clipboard?.writeText(createdUserCreds.password || ''); showNotification('success','Copied password'); }} className="px-3 py-1 bg-blue-600 rounded">Copy</button>
+                </div>
+              </div>
+
+              <div className="bg-neutral-900 p-3 rounded flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="text-sm text-neutral-400">API Key</div>
+                  <div className="text-white font-mono break-words">{createdUserCreds.apiKey || '(none)'}</div>
+                </div>
+                <div className="flex-shrink-0">
+                  <button onClick={() => { navigator.clipboard?.writeText(createdUserCreds.apiKey || ''); showNotification('success','Copied API key'); }} className="px-3 py-1 bg-blue-600 rounded">Copy</button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button onClick={() => setCreatedUserCreds(null)} className="px-4 py-2 bg-neutral-700 rounded">Done</button>
+              </div>
             </div>
           </div>
         </div>
