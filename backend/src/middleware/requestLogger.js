@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 
 const ENABLED = String(process.env.REQUEST_LOGGER || 'false').toLowerCase() === 'true';
-const LOG_HEADERS = (String(process.env.LOG_HEADERS || 'false').toLowerCase() === 'true');
-const LOG_REQ_BODY = (String(process.env.LOG_REQ_BODY || 'false').toLowerCase() === 'true');
-const LOG_REQ_RES = (String(process.env.LOG_REQ_RES || 'false').toLowerCase() === 'true');
+const LOG_HEADERS = (String(process.env.LOG_HEADERS|| 'false').toLowerCase() === 'true');
+const LOG_REQ_BODY = (String(process.env.LOG_REQ_BODY|| 'false').toLowerCase() === 'true');
+const LOG_REQ_RES = (String(process.env.LOG_REQ_RES|| 'false').toLowerCase() === 'true');
+const SKIP_ALLOWED_ORIGIN = (String(process.env.SKIP_ALLOWED_ORIGIN || 'false').toLowerCase() === 'true');
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || null;
 const MAX_BODY_CHARS = parseInt(process.env.REQUEST_LOGGER_MAX_BODY_CHARS || '10000', 10);
 
 function maskHeaders(headers) {
@@ -56,6 +58,14 @@ function safeStringify(obj) {
 
 module.exports = function requestLogger(req, res, next) {
   if (!ENABLED) return next();
+  if (req && req.originalUrl && req.originalUrl.startsWith('/status')) return next();
+
+  try {
+    const origin = req && req.headers && req.headers.origin;
+    if (SKIP_ALLOWED_ORIGIN && origin) {
+      if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) return next();
+    }
+  } catch (e) {}
 
   const start = Date.now();
   const { method, originalUrl, headers } = req;
