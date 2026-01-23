@@ -29,7 +29,7 @@ import {
   CrabEntry,
 } from "../utils/adminAPI";
 
-type Tab = "stats" | "leaderboards" | "users" | "data" | "admins";
+type Tab = "stats" | "leaderboards" | "users" | "data" | "admins" | "logs";
 
 interface TabButtonProps {
   active: boolean;
@@ -106,6 +106,35 @@ export default function AdminPage() {
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
 
+  // Logs
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logsError, setLogsError] = useState<string | null>(null);
+  const [loggerEnabled, setLoggerEnabled] = useState<boolean | null>(null);
+  const [logHeadersEnabled, setLogHeadersEnabled] = useState<boolean | null>(null);
+  const [logReqBodyEnabled, setLogReqBodyEnabled] = useState<boolean | null>(null);
+  const [logResBodyEnabled, setLogResBodyEnabled] = useState<boolean | null>(null);
+
+  const [logsSortField, setLogsSortField] = useState<string>('timestamp');
+  const [logsSortAsc, setLogsSortAsc] = useState<boolean>(false);
+  const [detailLog, setDetailLog] = useState<any | null>(null);
+
+  const [filterPath, setFilterPath] = useState("");
+  const [filterResponseCode, setFilterResponseCode] = useState("");
+  const [filterOrigin, setFilterOrigin] = useState("");
+  const [filterMethod, setFilterMethod] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+
+  const toggleLogsSort = (field: string) => {
+    if (logsSortField === field) {
+      setLogsSortAsc(!logsSortAsc);
+    } else {
+      setLogsSortField(field);
+      setLogsSortAsc(true);
+    }
+  };
+
   const [dataUsers, setDataUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedGamemode, setSelectedGamemode] = useState("earth");
@@ -157,11 +186,31 @@ export default function AdminPage() {
       loadUsers();
     } else if (activeTab === "data") {
       loadDataUsers();
+    } else if (activeTab === "logs") {
+      loadLogs();
     } else if (activeTab === "admins") {
       loadCurrentAdmin();
       loadAdmins();
     }
   }, [activeTab, refreshTrigger]);
+
+  const loadLogs = async () => {
+    try {
+      setLogsLoading(true);
+      setLogsError(null);
+      const data: any = await adminApi.getLogs();
+      setLoggerEnabled(Boolean(data.enabled));
+      setLogHeadersEnabled(Boolean(data.logHeaders));
+      setLogReqBodyEnabled(Boolean(data.logRequestBody));
+      setLogResBodyEnabled(Boolean(data.logResponseBody));
+      setLogs(Array.isArray(data.logs) ? data.logs : []);
+    } catch (error) {
+      let errorMessage = error instanceof Error ? error.message : "Unknown error";
+      setLogsError(errorMessage);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === "leaderboards") {
@@ -717,6 +766,168 @@ export default function AdminPage() {
       )}
     </div>
   );
+
+  const renderLogsTab = () => {
+    const filtered = logs.filter((l) => {
+      if (filterPath && !(l.path || "").toLowerCase().includes(filterPath.toLowerCase())) return false;
+      if (filterResponseCode && String(l.responseCode || "") !== String(filterResponseCode)) return false;
+      if (filterOrigin && !(l.ip || "").toLowerCase().includes(filterOrigin.toLowerCase())) return false;
+      if (filterMethod && filterMethod !== "" && (l.method || "").toUpperCase() !== filterMethod.toUpperCase()) return false;
+      if (filterFrom) {
+        const fromDate = new Date(filterFrom);
+        const ts = new Date(l.timestamp);
+        if (isNaN(fromDate.getTime()) || ts < fromDate) return false;
+      }
+      if (filterTo) {
+        const toDate = new Date(filterTo);
+        const ts = new Date(l.timestamp);
+        if (isNaN(toDate.getTime()) || ts > toDate) return false;
+      }
+      return true;
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      const field = logsSortField || 'timestamp';
+      const getVal = (obj: any) => {
+        switch (field) {
+          case 'timestamp': return obj.timestamp || '';
+          case 'method': return (obj.method || '').toString();
+          case 'path': return (obj.path || '').toString();
+          case 'responseCode': return Number(obj.responseCode || 0);
+          case 'ip': return (obj.ip || '').toString();
+          case 'durationMs': return Number(obj.durationMs || 0);
+          default: return (obj[field] || '').toString();
+        }
+      };
+
+      const va = getVal(a);
+      const vb = getVal(b);
+
+      let cmp = 0;
+      if (field === 'timestamp') {
+        cmp = (new Date(va).getTime() || 0) - (new Date(vb).getTime() || 0);
+      } else if (typeof va === 'number' || typeof vb === 'number') {
+        cmp = (Number(va) || 0) - (Number(vb) || 0);
+      } else {
+        cmp = String(va).localeCompare(String(vb));
+      }
+
+      return logsSortAsc ? cmp : -cmp;
+    });
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-white mb-2">Logs</h2>
+          <p className="text-neutral-400">Request logger overview and searchable logs</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-neutral-800 p-4 rounded">
+            <div className="text-sm text-neutral-400">Logger Enabled</div>
+            <div className="text-white font-medium">{String(loggerEnabled)}</div>
+          </div>
+          <div className="bg-neutral-800 p-4 rounded">
+            <div className="text-sm text-neutral-400">Log Headers</div>
+            <div className="text-white font-medium">{String(logHeadersEnabled)}</div>
+          </div>
+          <div className="bg-neutral-800 p-4 rounded">
+            <div className="text-sm text-neutral-400">Log Request Body</div>
+            <div className="text-white font-medium">{String(logReqBodyEnabled)}</div>
+          </div>
+          <div className="bg-neutral-800 p-4 rounded">
+            <div className="text-sm text-neutral-400">Log Response Body</div>
+            <div className="text-white font-medium">{String(logResBodyEnabled)}</div>
+          </div>
+        </div>
+
+        <div className="bg-neutral-800 p-4 rounded grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input value={filterPath} onChange={(e) => setFilterPath(e.target.value)} placeholder="Path" className="px-3 py-2 bg-neutral-900 rounded" />
+          <input value={filterResponseCode} onChange={(e) => setFilterResponseCode(e.target.value)} placeholder="Response code" className="px-3 py-2 bg-neutral-900 rounded" />
+          <input value={filterOrigin} onChange={(e) => setFilterOrigin(e.target.value)} placeholder="Origin / IP" className="px-3 py-2 bg-neutral-900 rounded" />
+          <select value={filterMethod} onChange={(e) => setFilterMethod(e.target.value)} className="px-3 py-2 bg-neutral-900 rounded">
+            <option value="">Any method</option>
+            <option>GET</option>
+            <option>POST</option>
+            <option>PUT</option>
+            <option>DELETE</option>
+            <option>PATCH</option>
+            <option>OPTIONS</option>
+          </select>
+          <input type="datetime-local" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} className="px-3 py-2 bg-neutral-900 rounded" />
+          <input type="datetime-local" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} className="px-3 py-2 bg-neutral-900 rounded" />
+          <div className="flex gap-2">
+            <button onClick={() => { setFilterPath(''); setFilterResponseCode(''); setFilterOrigin(''); setFilterMethod(''); setFilterFrom(''); setFilterTo(''); }} className="px-4 py-2 bg-neutral-700 rounded">Clear</button>
+            <button onClick={loadLogs} className="px-4 py-2 bg-blue-600 rounded text-white">Reload</button>
+          </div>
+        </div>
+
+        {logsLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+          </div>
+        ) : logsError ? (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-center">
+            <p className="text-red-400">{logsError}</p>
+            <button onClick={loadLogs} className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg">Retry</button>
+          </div>
+        ) : (
+          <div className="bg-neutral-800 rounded-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-neutral-700">
+                  <tr>
+                    <th onClick={() => toggleLogsSort('timestamp')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Time {logsSortField === 'timestamp' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th onClick={() => toggleLogsSort('method')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Method {logsSortField === 'method' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th onClick={() => toggleLogsSort('path')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Path {logsSortField === 'path' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th onClick={() => toggleLogsSort('responseCode')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Code {logsSortField === 'responseCode' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th onClick={() => toggleLogsSort('ip')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Origin {logsSortField === 'ip' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th onClick={() => toggleLogsSort('durationMs')} className="px-4 py-2 text-left text-sm text-neutral-300 cursor-pointer select-none">Duration {logsSortField === 'durationMs' ? (logsSortAsc ? '▲' : '▼') : ''}</th>
+                    <th className="px-4 py-2 text-left text-sm text-neutral-300">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((l, i) => (
+                    <tr key={l.id || i} className="border-t border-neutral-700 hover:bg-neutral-700/50">
+                      <td className="px-4 py-2 text-sm text-white">{new Date(l.timestamp).toLocaleString()}</td>
+                      <td className="px-4 py-2 text-sm text-white">{l.method}</td>
+                      <td className="px-4 py-2 text-sm text-white">{l.path}</td>
+                      <td className="px-4 py-2 text-sm text-neutral-300">{l.responseCode ?? '-'}</td>
+                      <td className="px-4 py-2 text-sm text-neutral-300">{l.ip ?? '-'}</td>
+                      <td className="px-4 py-2 text-sm text-neutral-300">{l.durationMs ?? '-'}</td>
+                      <td className="px-4 py-2 text-sm text-neutral-300 flex items-center gap-2">
+                        <button onClick={() => setDetailLog(l)} title="View details" className="px-2 py-1 bg-neutral-700 text-white rounded hover:bg-neutral-600"><FaEye /></button>
+                        <button onClick={() => {
+                          showConfirm('Delete this log entry?', async () => {
+                            try {
+                              await adminApi.deleteLog(l.id);
+                              showNotification('success', 'Log deleted');
+                              await loadLogs();
+                            } catch (err) {
+                              showNotification('error', 'Failed to delete log: ' + (err instanceof Error ? err.message : 'Unknown'));
+                            }
+                          });
+                        }} className="px-2 py-1 bg-red-600 text-white rounded"><FaTrash /></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+    const copyToClipboard = async (text: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        showNotification('success', 'Copied to clipboard');
+      } catch (e) {
+        showNotification('error', 'Failed to copy');
+      }
+    };
 
   const renderUsersTab = () => (
     <div className="space-y-8">
@@ -1485,6 +1696,16 @@ export default function AdminPage() {
             Data Management
           </TabButton>
           <TabButton
+            active={activeTab === "logs"}
+            onClick={() => {
+              setActiveTab("logs");
+              setRefreshTrigger((prev) => prev + 1);
+            }}
+            icon={<FaEye />}
+          >
+            Logs
+          </TabButton>
+          <TabButton
             active={activeTab === "admins"}
             onClick={() => {
               setActiveTab("admins");
@@ -1507,6 +1728,7 @@ export default function AdminPage() {
             {activeTab === "stats" && renderStatsTab()}
             {activeTab === "leaderboards" && renderLeaderboardsTab()}
             {activeTab === "users" && renderUsersTab()}
+            {activeTab === "logs" && renderLogsTab()}
             {activeTab === "data" && renderDataTab()}
             {activeTab === "admins" && renderAdminsTab()}
           </motion.div>
@@ -1514,6 +1736,68 @@ export default function AdminPage() {
       </div>
 
       <span className="text-orange-500 hidden"></span>
+
+      {detailLog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-neutral-800 p-6 rounded-xl w-full max-w-4xl max-h-[80vh] overflow-auto">
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-xl font-bold text-white">Log Details</h3>
+              <div className="flex gap-2">
+                <button onClick={() => setDetailLog(null)} className="px-3 py-1 bg-neutral-700 text-white rounded">Close</button>
+              </div>
+            </div>
+
+            <div className="space-y-4 mt-4">
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm text-neutral-400">Request Headers</label>
+                  <button onClick={() => copyToClipboard(JSON.stringify(detailLog.receivedHeaders || {}, null, 2))} className="px-2 py-1 bg-neutral-700 text-white rounded text-sm">Copy</button>
+                </div>
+                <pre className="bg-neutral-900 p-3 rounded text-sm overflow-auto whitespace-pre-wrap">{JSON.stringify(detailLog.receivedHeaders || {}, null, 2)}</pre>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm text-neutral-400">Request Body</label>
+                  <button onClick={() => copyToClipboard(typeof detailLog.requestBody === 'string' ? detailLog.requestBody : JSON.stringify(detailLog.requestBody || {}, null, 2))} className="px-2 py-1 bg-neutral-700 text-white rounded text-sm">Copy</button>
+                </div>
+                <pre className="bg-neutral-900 p-3 rounded text-sm overflow-auto whitespace-pre-wrap">{typeof detailLog.requestBody === 'string' ? detailLog.requestBody : JSON.stringify(detailLog.requestBody || {}, null, 2)}</pre>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm text-neutral-400">Response Headers</label>
+                  <button onClick={() => copyToClipboard(JSON.stringify(detailLog.sentHeaders || {}, null, 2))} className="px-2 py-1 bg-neutral-700 text-white rounded text-sm">Copy</button>
+                </div>
+                <pre className="bg-neutral-900 p-3 rounded text-sm overflow-auto whitespace-pre-wrap">{JSON.stringify(detailLog.sentHeaders || {}, null, 2)}</pre>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm text-neutral-400">Response Body</label>
+                  <button onClick={() => copyToClipboard(typeof detailLog.response === 'string' ? detailLog.response : JSON.stringify(detailLog.response || {}, null, 2))} className="px-2 py-1 bg-neutral-700 text-white rounded text-sm">Copy</button>
+                </div>
+                <pre className="bg-neutral-900 p-3 rounded text-sm overflow-auto whitespace-pre-wrap">{typeof detailLog.response === 'string' ? detailLog.response : JSON.stringify(detailLog.response || {}, null, 2)}</pre>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-sm text-neutral-400">Method</label>
+                  <div className="text-white">{detailLog.method}</div>
+                </div>
+                <div>
+                  <label className="text-sm text-neutral-400">Path</label>
+                  <div className="text-white">{detailLog.path}</div>
+                </div>
+                <div>
+                  <label className="text-sm text-neutral-400">Status</label>
+                  <div className="text-white">{detailLog.responseCode}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showCreateUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

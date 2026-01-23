@@ -1,4 +1,4 @@
-const API_BASE = process.env.API_URL || 'http://localhost:10000';
+const API_BASE = 'http://localhost:10000';
 
 export interface AdminStats {
   totalUsers: number;
@@ -226,6 +226,32 @@ export const adminApi = {
 
   deleteCrab: (crabId: string, userId: string, gamemode: string): Promise<{ message: string }> =>
     apiRequest(`/v2/admin/user/${encodeURIComponent(userId)}/crab/delete?gamemode=${encodeURIComponent(gamemode)}&count=1`, {
+      method: 'DELETE',
+    }),
+
+  getLogs: (): Promise<{
+    enabled: boolean;
+    logHeaders: boolean;
+    logRequestBody: boolean;
+    logResponseBody: boolean;
+    count: number;
+    logs: Array<{
+      id: string;
+      timestamp: string;
+      method: string;
+      path: string;
+      receivedHeaders?: any;
+      sentHeaders?: any;
+      requestBody?: any;
+      response?: any;
+      responseCode?: number;
+      durationMs?: number;
+      ip?: string;
+    }>;
+  }> => apiRequest('/v2/admin/logs'),
+
+  deleteLog: (logId: string) =>
+    apiRequest(`/v2/admin/logs/delete/${encodeURIComponent(logId)}`, {
       method: 'DELETE',
     }),
 
