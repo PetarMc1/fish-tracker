@@ -24,6 +24,7 @@ const { getMe, createAdmin, createAdminV2, listAdminsV2, deleteAdminV2 } = requi
 const { getStats } = require("./controllers/adminStatsController");
 const { getUserFish: getAdminUserFish, getUserFishV2: getAdminUserFishV2, getUserCrabs: getAdminUserCrabs, getUserCrabsV2: getAdminUserCrabsV2, deleteFish, deleteCrab, deleteFishV2, deleteCrabV2, createFish, createCrab, createFishV2, createCrabV2 } = require("./controllers/adminDataController");
 const { getLeaderboard } = require("./controllers/adminActivityController");
+const { listLogs, deleteLog } = require("./controllers/adminLogsController");
 
 const app = express();
 // trust proxy so rate limiting works if the api is behind a proxy/load balancer
@@ -33,7 +34,7 @@ const swaggerSpec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'opena
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://tracker.petarmc.com'];
+const allowedOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://tracker.petarmc.com', "http://localhost:10000"];
 if (process.env.ALLOWED_ORIGIN) allowedOrigins.push(process.env.ALLOWED_ORIGIN);
 
 const corsOptions = {
@@ -120,6 +121,10 @@ app.post('/v2/admin/user/:id/crab/create', createCrabV2);
 app.post('/v2/admin/admins/create', requireRole('superadmin'), createAdminV2);
 app.get('/v2/admin/admins', requireRole('superadmin'), listAdminsV2);
 app.delete('/v2/admin/admins/delete/:id', requireRole('superadmin'), deleteAdminV2);
+
+// Logs: show recent request logs and allow deletion of a specific log
+app.get('/v2/admin/logs', listLogs);
+app.delete('/v2/admin/logs/delete/:logid', requireRole('superadmin'), deleteLog);
 
 app.use(rateLimitWrapper);
 

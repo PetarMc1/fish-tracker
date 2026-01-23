@@ -305,6 +305,41 @@
         "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } }
       }
     },
+    "/v2/admin/logs": {
+      "get": {
+        "tags": ["admin"],
+        "summary": "List endpoint request logs",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "responses": {
+          "200": {
+            "description": "Logs and logger configuration",
+            "content": {
+              "application/json": {
+                "example": {
+                  "enabled": true,
+                  "logHeaders": false,
+                  "logRequestBody": false,
+                  "logResponseBody": false,
+                  "count": 2,
+                  "logs": [
+                    { "id": "605c5d...", "timestamp": "2025-01-01T00:00:00.000Z", "method": "POST", "path": "/v1/post/fish", "responseCode": 201, "durationMs": 12 }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/admin/logs/delete/{logid}": {
+      "delete": {
+        "tags": ["admin"],
+        "summary": "Delete specific log (superadmin only)",
+        "security": [ { "AdminBearerAuth": [], "AdminCsrf": [] } ],
+        "parameters": [ { "in": "path", "name": "logid", "required": true, "schema": { "type": "string" } } ],
+        "responses": { "200": { "description": "Deleted" }, "404": { "description": "Not found" } }
+      }
+    },
     "/v1/admin/auth/csrf-token": {
       "get": {
         "tags": ["admin"],

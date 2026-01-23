@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const ENABLED = String(process.env.REQUEST_LOGGER || 'false').toLowerCase() === 'true';
-const LOG_HEADERS = (String(process.env.LOG_HEADERS || process.env.REQUEST_LOGGER_LOG_HEADERS || 'false').toLowerCase() === 'true');
-const LOG_REQ_BODY = (String(process.env.LOG_REQ_BODY || process.env.REQUEST_LOGGER_LOG_BODY || 'false').toLowerCase() === 'true');
-const LOG_REQ_RES = (String(process.env.LOG_REQ_RES || process.env.REQUEST_LOGGER_LOG_BODY || 'false').toLowerCase() === 'true');
+const LOG_HEADERS = (String(process.env.LOG_HEADERS || 'false').toLowerCase() === 'true');
+const LOG_REQ_BODY = (String(process.env.LOG_REQ_BODY || 'false').toLowerCase() === 'true');
+const LOG_REQ_RES = (String(process.env.LOG_REQ_RES || 'false').toLowerCase() === 'true');
 const MAX_BODY_CHARS = parseInt(process.env.REQUEST_LOGGER_MAX_BODY_CHARS || '10000', 10);
 
 function maskHeaders(headers) {
