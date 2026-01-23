@@ -5,6 +5,8 @@
 
 A secure REST API for encrypted storage and retrieval of submitted **fish** and **crab** data. Built with Node.js, Express, MongoDB, and Fernet encryption.
 
+>[!WARNING]
+>Most things here are outdated. Check the [docs](https://docs.petarmc.com/fish-tracker) for up to date info
 ## Admin Panel Setup
 
 The API includes a comprehensive admin panel for managing users, data, and system statistics.
