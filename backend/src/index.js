@@ -39,7 +39,7 @@ const corsOptions = {
     else callback(new Error('Not allowed by CORS'));
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'x-csrf-token'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'x-csrf-token', "x-gamemode", "x-api-key"],
   exposedHeaders: ['Authorization'],
   credentials: true,
   optionsSuccessStatus: 204
