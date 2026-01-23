@@ -4,7 +4,7 @@ const UserModel = require("../models/User");
 const uri = process.env.MONGO_URI;
 if (!uri) throw new Error("MONGO_URI is not set in environment");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
+const { isValidGamemode } = require('../utils/validators');
 
 async function getUserFish(req, res) {
   if (req.method !== "GET") {
@@ -28,7 +28,7 @@ async function getUserFish(req, res) {
     return;
   }
 
-  if (!VALID_GAMEMODES.includes(gamemode)) {
+  if (!isValidGamemode(gamemode)) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Invalid gamemode" }));
     return;

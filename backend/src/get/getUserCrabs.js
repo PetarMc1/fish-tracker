@@ -1,7 +1,7 @@
 const CrabModel = require("../models/Crab");
 const UserModel = require("../models/User");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
+const { isValidGamemode } = require('../utils/validators');
 
 async function getUserCrabs(req, res) {
   if (req.method !== "GET") {
@@ -26,7 +26,7 @@ async function getUserCrabs(req, res) {
     return;
   }
 
-  if (!VALID_GAMEMODES.includes(gamemode)) {
+  if (!isValidGamemode(gamemode)) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Invalid gamemode" }));
     return;

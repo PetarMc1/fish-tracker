@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
+const { isValidGamemode } = require('../utils/validators');
 class FishModel {
   static mapRarity(rarity) {
     switch (rarity) {
@@ -15,7 +15,7 @@ class FishModel {
   }
 
   static async findByUserAndGamemode(userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;
@@ -32,7 +32,7 @@ class FishModel {
   }
 
   static async countByGamemode(gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;
@@ -50,7 +50,7 @@ class FishModel {
   }
 
   static async deleteById(fishId, userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;
@@ -67,7 +67,7 @@ class FishModel {
   }
 
   static async insertMany(fishData, userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;

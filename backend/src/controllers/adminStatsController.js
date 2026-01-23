@@ -2,14 +2,8 @@ const UserModel = require('../models/User');
 const FishModel = require('../models/Fish');
 const CrabModel = require('../models/Crab');
 
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
-
-function validateGamemode(gamemode) {
-  if (!VALID_GAMEMODES.includes(gamemode)) {
-    throw new Error('Invalid gamemode');
-  }
-  return gamemode;
-}
+const VALID_GAMEMODES = require('../config/gamemodes');
+const { validateGamemode } = require('../utils/validators');
 
 async function getStats(req, res) {
   try {
@@ -27,7 +21,7 @@ async function getStats(req, res) {
     for (const gamemode of VALID_GAMEMODES) {
       try {
         validateGamemode(gamemode);
-        
+
         const fishCount = await FishModel.countByGamemode(gamemode);
         const crabCount = await CrabModel.countByGamemode(gamemode);
         fishStats[gamemode] = fishCount;

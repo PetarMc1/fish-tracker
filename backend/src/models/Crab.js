@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
+const { isValidGamemode } = require('../utils/validators');
 class CrabModel {
   static async findByUserAndGamemode(userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
 
@@ -21,7 +21,7 @@ class CrabModel {
   }
 
   static async countByGamemode(gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
 
@@ -41,7 +41,7 @@ class CrabModel {
   }
 
   static async deleteById(crabId, userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;
@@ -59,7 +59,7 @@ class CrabModel {
   }
 
   static async deleteCount(userName, gamemode, count) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
 
@@ -82,7 +82,7 @@ class CrabModel {
   }
 
   static async insertMany(crabData, userName, gamemode) {
-    if (!VALID_GAMEMODES.includes(gamemode)) {
+    if (!isValidGamemode(gamemode)) {
       throw new Error('Invalid gamemode');
     }
     const db = mongoose.connection.db;

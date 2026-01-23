@@ -2,21 +2,7 @@ const UserModel = require('../models/User');
 const FishModel = require('../models/Fish');
 const CrabModel = require('../models/Crab');
 
-const VALID_GAMEMODES = ['oneblock', 'earth', 'survival', 'factions', 'boxsmp'];
-
-function validateGamemode(gamemode) {
-  if (!VALID_GAMEMODES.includes(gamemode)) {
-    throw new Error('Invalid gamemode');
-  }
-  return gamemode;
-}
-
-function validateUserId(id) {
-  if (typeof id !== 'string' || id.length === 0) {
-    throw new Error('Invalid user ID');
-  }
-  return id;
-}
+const { validateGamemode, validateUserId } = require('../utils/validators');
 
 async function getUserFish(req, res) {
   try {

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Fernet = require("fernet");
 
-const VALID_GAMEMODES = ["oneblock", "earth", "survival", "factions", "boxsmp"];
+const { isValidGamemode } = require('../utils/validators');
 
 async function handleFish(req, res) {
   if (req.method !== "POST") {
@@ -37,7 +37,7 @@ async function handleFish(req, res) {
     return;
   }
 
-  if (!VALID_GAMEMODES.includes(gamemode)) {
+  if (!isValidGamemode(gamemode)) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Invalid gamemode" }));
     return;
