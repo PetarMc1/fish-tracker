@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white font-sans">
+    <main className="min-h-screen text-white font-sans">
 
       <section className="max-w-6xl mx-auto px-6 space-y-24 pt-4">
         <motion.div
@@ -75,18 +75,7 @@ export default function Home() {
         <Section title="Fish Rarity Tiers" />
         <RarityTable />
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="text-center text-sm text-neutral-500 pt-12"
-        >
-          Not affiliated with CosmosMC. Built by Petar_mc.{" "}
-          <a href="https://discord.gg/Uah2dNRhFV" className="text-blue-400 underline" target="_blank" rel="noopener noreferrer">
-            Join the Discord →
-          </a>
-        </motion.div>
+        <div className="pt-12"/>
       </section>
     </main>
   );

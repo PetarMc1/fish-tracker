@@ -69,12 +69,11 @@ export default function Navbar() {
     setUserName(newUsername);
     setMenuOpen(false);
     window.dispatchEvent(new Event("storage"));
-    // Reload to update the page with new username
     window.location.reload();
   };
 
   return (
-    <nav className="sticky top-0 w-full z-50 backdrop-blur bg-[#0f0f11]/80">
+    <nav className="sticky top-0 w-full z-50 backdrop-blur">
       <div className="flex items-center justify-between py-4 px-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-6">
           <button
@@ -82,14 +81,6 @@ export default function Navbar() {
             className="text-2xl font-bold text-white select-none hover:text-blue-400 transition-colors duration-300"
           >
             Fish Tracker
-          </button>
-
-          <button
-            onClick={() => router.push("/")}
-            className="text-white hover:text-blue-400 transition-colors duration-300"
-            aria-label="Homepage"
-          >
-            Home
           </button>
 
           <button

@@ -214,14 +214,14 @@ export default function StatsPage() {
 
   if (!username) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] text-white p-4 font-sans">
+      <main className="min-h-screen flex items-center justify-center text-white p-4 font-sans">
         <p className="text-lg text-neutral-400">Redirecting to login...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0f0f11] to-[#1a1a1d] p-8 text-white font-sans">
+    <main className="min-h-screen p-8 text-white font-sans">
       <section className="max-w-6xl mx-auto space-y-12">
         <header className="text-center space-y-3">
           <motion.h1
