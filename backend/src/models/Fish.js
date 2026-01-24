@@ -56,13 +56,7 @@ class FishModel {
     const db = mongoose.connection.db;
 
     const collName = `fish_${userName}_${gamemode}`;
-    let _id;
-    try {
-      _id = mongoose.Types.ObjectId(fishId);
-    } catch {
-      return { deletedCount: 0 };
-    }
-    const result = await db.collection(collName).deleteOne({ _id });
+    const result = await db.collection(collName).deleteOne({ _id: fishId });
     return result;
   }
 
