@@ -110,6 +110,14 @@ export default function Navbar() {
           >
             Docs
           </a>
+
+          <a
+            href="/contacts"
+            className="text-white hover:text-blue-400 transition-colors duration-300"
+            aria-label="Contact"
+          >
+            Contact
+          </a>
         </div>
 
         <div className="flex items-center gap-6">
