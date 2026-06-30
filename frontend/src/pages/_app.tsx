@@ -12,7 +12,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       <div className="w-full bg-red-500 border-b border-red-500" role="status" aria-live="polite">
         <div className="max-w-6xl mx-auto px-4 py-3 text-center text-black font-semibold text-sm sm:text-base">
-          API unavailable due to project inactivity. For more information contact <a href="mailto:petar@petarmc.com" className="">petar@petarmc.com</a>
+          API unavailable due to project inactivity. For more information contact <a href="mailto:fishtracker@ptrmc.net" className="">fishtracker@ptrmc.net</a>
         </div>
       </div>
       {!isAdminPage && <Navbar />}

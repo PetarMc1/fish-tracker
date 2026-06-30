@@ -83,13 +83,13 @@ export default function Navbar() {
             Fish Tracker
           </button>
 
-          <button
-            onClick={() => router.push("/mod")}
+                    <a
+            href="/mod"
             className="text-white hover:text-blue-400 transition-colors duration-300"
-            aria-label="Mod page"
+            aria-label="Mod Information"
           >
             Mod
-          </button>
+          </a>
 
           <a
             href="https://api.tracker.petarmc.com/docs"
